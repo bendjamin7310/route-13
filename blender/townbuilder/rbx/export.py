@@ -2,6 +2,22 @@
 manifest.json and an .rbxmx bundle containing everything plus the Luau tools.
 
 All coordinates are converted to Roblox space: (x, y, z)_rbx = (x, z, -y)_blender.
+Rotations are quaternions (qx, qy, qz, qw) for CFrame.new(x, y, z, qx, qy, qz, qw).
+
+Chunk module (``Chunks/C{i}_{j}.lua``) blocks, one CSV record per line; ``#Owner|Part``
+lines start a group (``#B004|Exterior``, ``#B004|Interior``, ``#Infrastructure|Roads``,
+``#Vegetation`` ...):
+
+  parts      K,x,y,z,qx,qy,qz,qw,sx,sy,sz,material,collide
+             K = B block, W wedge, C cylinder (X = axis), S ball, E ellipsoid
+             material = Palette index (1-based) or "$channel" (kit prims only)
+  colliders  K,x,y,z,qx,qy,qz,qw,sx,sy,sz
+  props      kit,x,y,z,qx,qy,qz,qw,sx,sy,sz,flags,channels,meta
+             flags = interior | detail << 1; channels "fabric=12;paint=40"; meta "k=v;..."
+  lights     x,y,z,kind,r,g,b,range,brightness,schedule,dx,dy,dz,owner
+  markers    kind,x,y,z,yawDeg,label,owner,meta
+  signs      x,y,z,qx,qy,qz,qw,w,h,bg,fg,neon,board,owner,text   (face = local +Z)
+  carve      K,x,y,z,qx,qy,qz,qw,sx,sy,sz   terrain volumes to clear (Air)
 """
 
 from __future__ import annotations
@@ -584,7 +600,8 @@ def build_manifest(W, sizes):
                 p = to_roblox_pos((w.x, w.y, w.z))
                 landmarks.append({"name": mk.label, "pos": [round(v, 1) for v in p],
                                   "building": b.id})
-        if b.landmark:
+        if b.landmark and not any(mk.kind == "landmark" and mk.label == b.name
+                                  for mk in b.built.markers):
             cx, cy = b.lot.center
             p = to_roblox_pos((cx, cy, b.xf.z))
             landmarks.append({"name": b.name, "pos": [round(v, 1) for v in p],
@@ -671,8 +688,7 @@ def write_rbxmx(out, chunk_names, log=print):
         data_items.append(_item("ModuleScript", nm,
                                 source=rd(os.path.join(out, "PortSolace", nm + ".lua"))))
     chunk_items = "".join(_item("ModuleScript", c,
-                                source=rd(os.path.join(out, "PortSolace", "Chunks",
-                                                       c + ".lua"))))
+                                source=rd(os.path.join(out, "PortSolace", "Chunks", c + ".lua")))
                           for c in chunk_names)
     data_items.append(_item("Folder", "Chunks", chunk_items))
     tool_items = []

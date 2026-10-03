@@ -23,7 +23,7 @@ def motel(c: Ctx) -> Plan:
     """L-shaped two-storey motor inn: office + manager's flat in the corner block, rooms
     off exterior walkways, exterior stairs, ice/vending alcove, housekeeping, pool."""
     w, d = c.w, c.d
-    name = c.name or c.pick(["SEABREEZE MOTOR INN", "HARBOR LIGHT MOTEL", "DRIFTWOOD INN"])
+    name = c.name or c.pick_name(["SEABREEZE MOTOR INN", "HARBOR LIGHT MOTEL", "DRIFTWOOD INN"])
     p = Plan(w, d, [12.0, 12.0], quality="cheap", detail=c.detail, name=name)
     p.facade = Facade(mat=c.pick(["stucco_peach", "stucco_mint", "stucco_sky", "stucco_cream",
                                   "stucco_mustard"]), trim="trim_white", frame="frame_alu",
@@ -169,8 +169,9 @@ def motel(c: Ctx) -> Plan:
 @archetype("gas_station", (46, 56), (40, 50), "COMMERCIAL", "COMMERCIAL", front_setback=46,
            rear_clear=10, side_gap=12, yard="fuel")
 def gas_station(c: Ctx) -> Plan:
-    c.name = c.name or c.pick(["SOLACE FUEL", "HARBOR GAS & GO", "TIDEWATER FUEL STOP",
-                               "COASTLINE GAS"])
+    c.name = c.name or c.pick_name(["SOLACE FUEL", "HARBOR GAS & GO", "TIDEWATER FUEL STOP",
+                               "COASTLINE GAS", "BAYSIDE FUEL", "LAST CHANCE GAS",
+                               "ROUTE 13 FUEL"])
     p = convenience_store(c)
     p.name = c.name
     w, d = p.w, p.d

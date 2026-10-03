@@ -89,7 +89,7 @@ def lighthouse(c: Ctx) -> Plan:
                                      "night", dir_=(0.0, -1.0, -0.08)))
         B.out.markers.append(Marker("lighthouse_beam", cx, cy, zg + 5.0, 0.0, "Rotating beam",
                                     {"rpm": 4}))
-        B.out.markers.append(Marker("landmark", cx, cy, 0.0, 0.0, "Solace Point Lighthouse"))
+        B.out.markers.append(Marker("landmark", cx, cy, 0.0, 0.0, B.p.name))
         # stripe bands on the tower
         for k in (2, 4):
             z = B.z(k)
@@ -169,7 +169,7 @@ def water_tower(c: Ctx) -> Plan:
                   i * 1.0 + 0.6, False)
         B.out.markers.append(Marker("ladder", lx, ly - 2.0, 0.0, 0.0, "Water tower ladder",
                                     {"top": zt}))
-        B.out.markers.append(Marker("landmark", cx, cy, 0.0, 0.0, "Water Tower"))
+        B.out.markers.append(Marker("landmark", cx, cy, 0.0, 0.0, B.p.name))
         B.out.markers.append(Marker("vantage", cx, cy - 19.0, zt, 0.0, "Catwalk lookout"))
         B.out.signs.append(SignRec(
             "PORT SOLACE", cx, cy - 17.1, zt + 12.0, 0.0, 26.0, 5.5, "sign_blue", "sign_blue",
@@ -231,7 +231,7 @@ def parking_structure(c: Ctx) -> Plan:
         B.out.props.append(_pp("gate_arm", w * 0.55 - 7.0, 4.0, 0.0, 0.0))
         B.out.props.append(_pp("gate_arm", w * 0.8 - 7.0, 4.0, 0.0, 0.0))
         B.out.props.append(_pp("ticket_kiosk", w * 0.55 + 9.5, 4.0, 0.0, 0.0))
-        B.out.markers.append(Marker("landmark", w / 2, d / 2, 0.0, 0.0, "Parking Structure"))
+        B.out.markers.append(Marker("landmark", w / 2, d / 2, 0.0, 0.0, B.p.name))
     p.extras.append(booth)
     p.signs.append(Sign("PUBLIC PARKING", "front", 0, "board", bg="sign_blue", fg="sign_white",
                         neon=True, at=w * 0.67, width=26.0))
@@ -263,7 +263,7 @@ def mansion(c: Ctx) -> Plan:
         B.out.props.append(_pp("pool_ladder", x1 - 3.0, y0 + 0.4, 0.0, 0.0))
         B.out.lights.append(LightRec((x0 + x1) / 2, (y0 + y1) / 2, 0.5, (0.5, 0.9, 1.0), 40, 1.0,
                                      "point", "night"))
-        B.out.markers.append(Marker("landmark", B.p.w / 2, d / 2, 0.0, 0.0, "Hilltop Estate"))
+        B.out.markers.append(Marker("landmark", B.p.w / 2, d / 2, 0.0, 0.0, B.p.name))
         B.out.markers.append(Marker("safehouse", B.p.w / 2, -6.0, 0.0, 0.0, "Estate (high-end)"))
     p.extras.append(pool)
     p.tags.add("estate")

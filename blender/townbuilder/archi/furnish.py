@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import math
 import random
+import zlib
 
 from ..geom import Rect
 from ..records import PropPlace, LightRec
@@ -1699,7 +1700,8 @@ SCHEDULE_BY_FAMILY = {
 
 def furnish_building(B):
     p = B.p
-    rng = random.Random(hash((p.name, p.w, p.d, len(p.rooms))) & 0xFFFFFFFF)
+    # str hash() is salted per process; crc32 keeps interiors identical between runs
+    rng = random.Random(zlib.crc32(f"{p.name}|{p.w}|{p.d}|{len(p.rooms)}".encode()))
     fam = "dark" if p.quality == "abandoned" else p.lighting
     for room in p.rooms:
         if not room.furnish:

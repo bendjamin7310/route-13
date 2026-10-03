@@ -1,6 +1,8 @@
 """Render a single archetype for inspection (exterior + top-down cutaway per level).
 
     python tools/preview_building.py house_medium 50 50 out_dir [seed]
+
+Environment: LEVELS=0,1 renders only those floors; EXTERIOR=0 skips the exterior shots.
 """
 import math
 import os
@@ -96,12 +98,14 @@ def main():
     print("warnings:", b.warnings)
     setup_render()
     span = max(w, d)
-    camera((-span * 0.9, -span * 1.3, span * 0.9 + plan.height * 0.5), (w / 2, d / 2, plan.height * 0.3))
-    bpy.context.scene.render.filepath = os.path.join(out, f"{name}_ext.png")
-    bpy.ops.render.render(write_still=True)
-    camera((w * 0.5 + span * 0.8, d + span * 1.2, span * 0.9), (w / 2, d / 2, plan.height * 0.3))
-    bpy.context.scene.render.filepath = os.path.join(out, f"{name}_ext_back.png")
-    bpy.ops.render.render(write_still=True)
+    if os.environ.get("EXTERIOR", "1") != "0":       # EXTERIOR=0: floor plans only
+        camera((-span * 0.9, -span * 1.3, span * 0.9 + plan.height * 0.5),
+               (w / 2, d / 2, plan.height * 0.3))
+        bpy.context.scene.render.filepath = os.path.join(out, f"{name}_ext.png")
+        bpy.ops.render.render(write_still=True)
+        camera((w * 0.5 + span * 0.8, d + span * 1.2, span * 0.9), (w / 2, d / 2, plan.height * 0.3))
+        bpy.context.scene.render.filepath = os.path.join(out, f"{name}_ext_back.png")
+        bpy.ops.render.render(write_still=True)
     only = os.environ.get("LEVELS")
     for L in plan.all_levels():
         if only is not None and str(L) not in only.split(","):

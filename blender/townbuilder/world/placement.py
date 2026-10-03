@@ -38,6 +38,12 @@ MIX = {
                   ("warehouse_small", 0.4), ("auto_shop", 0.3)],
 }
 
+# limits so small, easy-to-fit footprints don't crowd out the district character
+CAPS = {("DOWNTOWN", "laundromat"): 1, ("DOWNTOWN", "pawn_shop"): 2,
+        ("DOWNTOWN", "convenience_store"): 2, ("MIXED_USE", "laundromat"): 2,
+        ("MIXED_USE", "pawn_shop"): 2, (None, "laundromat"): 6, (None, "pawn_shop"): 6,
+        (None, "gas_station"): 5, (None, "auto_shop"): 9}
+
 FILL = {"DOWNTOWN": 1.0, "MIXED_USE": 0.95, "LOW_INCOME": 0.85, "RESIDENTIAL": 0.85,
         "RESIDENTIAL_N": 0.8, "COMMERCIAL": 0.85, "MOTEL": 0.7, "INDUSTRIAL": 0.85,
         "WATERFRONT": 0.8, "CIVIC": 0.7, "OUTSKIRTS": 0.18}
@@ -132,6 +138,7 @@ class Placer:
         self.rail = catmull_rom(Lay.RAIL, 8.0)
         self.park_polys = list(Lay.PARKS.values())
         self.reject = {}
+        self.counts = {}                 # (district|None, archetype) -> placed
 
     # -- checks ----------------------------------------------------------------------------
     def ok(self, lot: Lot, frontage_road=None, check_lots=True):
@@ -293,6 +300,8 @@ class Placer:
                         lot.quality = "normal"
                     lot.site = False
                     self.lots.append(lot)
+                    self.counts[(dist, arch)] = self.counts.get((dist, arch), 0) + 1
+                    self.counts[(None, arch)] = self.counts.get((None, arch), 0) + 1
                     g0, g1 = GAP.get(dist, (8.0, 16.0))
                     s += w + max(a.side_gap if dist not in ("DOWNTOWN", "MIXED_USE") else 0.0,
                                  rng.uniform(g0, g1))
@@ -315,6 +324,9 @@ class Placer:
                 continue
             if arch in ("house_small", "house_medium", "house_nice", "house_old", "trailer") \
                     and road.kind == "major":
+                continue
+            if any(self.counts.get(k, 0) >= CAPS.get(k, 1 << 30) for k in ((dist, arch),
+                                                                            (None, arch))):
                 continue
             cands.append((arch, wgt))
         if not cands:

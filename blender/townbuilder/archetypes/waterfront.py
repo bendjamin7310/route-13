@@ -100,7 +100,7 @@ def marina_office(c: Ctx) -> Plan:
 def boat_storage(c: Ctx) -> Plan:
     w, d = c.w, c.d
     p = Plan(w, d, [14.0, 12.0], quality="normal", detail=c.detail,
-             name=c.name or c.pick(["Harbor Boat Storage", "Drydock Boat Barn"]))
+             name=c.name or c.pick_name(["Harbor Boat Storage", "Drydock Boat Barn"]))
     p.facade = _ind_facade(c)
     p.facade.mat = c.pick(["metal_wall_blue", "metal_wall_white", "metal_wall_green"])
     p.roof = Roof("gable", "roof_metal", pitch=0.3, ridge="y", overhang=1.0)
@@ -133,7 +133,7 @@ def boat_storage(c: Ctx) -> Plan:
 @archetype("waterfront_restaurant", (52, 66), (50, 62), "WATERFRONT", "COMMERCIAL",
            front_setback=10, rear_clear=16, side_gap=10, yard="parking")
 def waterfront_restaurant(c: Ctx) -> Plan:
-    c.name = c.name or c.pick(["Pier 9 Seafood", "The Salt Shack", "Captain's Table",
+    c.name = c.name or c.pick_name(["Pier 9 Seafood", "The Salt Shack", "Captain's Table",
                                "Lighthouse Oyster Bar"])
     p = _restaurant(c, "restaurant")
     p.facade.mat = c.pick(["shingle_wall", "siding_white", "siding_blue", "wood_weathered"])
@@ -150,7 +150,9 @@ def waterfront_restaurant(c: Ctx) -> Plan:
            rear_clear=8, side_gap=8, yard="loading")
 def harbor_shed(c: Ctx) -> Plan:
     from .industrial import warehouse_small
-    c.name = c.name or c.pick(["Harbor Maintenance", "Port Works Dept.", "Breakwater Boatworks"])
+    c.name = c.name or c.pick_name(["Harbor Maintenance", "Port Works Dept.", "Breakwater Boatworks",
+                                     "Tidewater Marine Repair", "Gull Point Boat Works",
+                                     "Harbor Rigging Co."])
     p = warehouse_small(c)
     p.facade.mat = c.pick(["metal_wall_rust", "metal_wall_green", "metal_wall_gray"])
     p.tags.add("waterfront")

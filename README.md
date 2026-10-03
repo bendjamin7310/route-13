@@ -11,3 +11,6 @@ Get to the sea at Mile 100 by sunrise.
 ## Docs
 
 - **[Game Design Document](docs/GAME_DESIGN.md):** the pitch, the Plate Game mechanic, the 100-mile run, factions, story and endings, progression, Roblox build notes and the build order.
+- **[Port Solace: Town Map & World Design](docs/TOWN_MAP.md):** an original, fully explorable 2560 × 2560-stud coastal town (districts, landmarks, roads, interiors, gameplay spaces), built in Blender and imported into Roblox.
+- **[Port Solace: Town Directory](docs/TOWN_DIRECTORY.md):** every building, landmark and road with Roblox coordinates.
+- **[Blender generator & Roblox pipeline](blender/README.md):** how to build the town, export it, and assemble it in Roblox Studio ([`roblox/`](roblox/README.md) holds the Luau builder and runtime).

@@ -27,6 +27,21 @@ class Ctx:
     def pick(self, seq):
         return self.rng.choice(seq)
 
+    def pick_name(self, seq):
+        """Like pick() (same single rng draw) but skips names already used in the town."""
+        seq = list(seq)
+        i = seq.index(self.rng.choice(seq))
+        for k in range(len(seq)):
+            cand = seq[(i + k) % len(seq)]
+            if cand not in USED_NAMES:
+                USED_NAMES.add(cand)
+                return cand
+        n = 2
+        while f"{seq[i]} {n}" in USED_NAMES:
+            n += 1
+        USED_NAMES.add(f"{seq[i]} {n}")
+        return f"{seq[i]} {n}"
+
     def chance(self, p):
         return self.rng.random() < p
 
@@ -70,6 +85,13 @@ def load_all():
             if e.name != f"{__name__}.{m}":
                 raise
     return ARCH
+
+
+USED_NAMES = set()
+
+
+def reset_names():
+    USED_NAMES.clear()
 
 
 def make(arch, w, d, seed, **kw):

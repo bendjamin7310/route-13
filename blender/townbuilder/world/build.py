@@ -46,6 +46,7 @@ def build_world(seed=7, density=1.0, veg_density=1.0, max_buildings=None, log_fn
     rng = random.Random(seed)
     kit.load_all()
     archetypes.load_all()
+    archetypes.reset_names()          # business names are unique per generated town
     W = World()
     log_fn("terrain macro")
     T = Terrain(seed)
@@ -78,11 +79,11 @@ def build_world(seed=7, density=1.0, veg_density=1.0, max_buildings=None, log_fn
         T.stamp_rect(lot.yard_rect, lot.z - 0.6, 4.0, 18.0)
     rail.stamp()
     # district codes for terrain texture/noise: 1 urban, 2 residential, 3 industrial,
-    # 4 outskirts fields
+    # 4 outskirts fields, 5 downtown (paved)
     X, Y = T.X, T.Y
     dg = np.full(X.shape, 4, dtype=np.int8)
     for name, poly in Lay.DISTRICTS.items():
-        code = {"RESIDENTIAL": 2, "RESIDENTIAL_N": 2, "INDUSTRIAL": 3}.get(name, 1)
+        code = {"RESIDENTIAL": 2, "RESIDENTIAL_N": 2, "INDUSTRIAL": 3, "DOWNTOWN": 5}.get(name, 1)
         m = _poly_mask(X, Y, poly)
         dg = np.where(m & (dg == 4), code, dg)
     for name, poly in Lay.PARKS.items():
@@ -138,6 +139,7 @@ def build_world(seed=7, density=1.0, veg_density=1.0, max_buildings=None, log_fn
     D.seawall()
     D.power_line()
     D.outskirts()
+    nhide = D.hideouts()
     nveg = D.vegetation(veg_density)
     log_fn(f"dressing done ({nveg} vegetation instances)")
     W.stats = {
@@ -149,7 +151,7 @@ def build_world(seed=7, density=1.0, veg_density=1.0, max_buildings=None, log_fn
         "rooms": sum(len(b.plan.rooms) for b in W.buildings),
         "roads": len(net.roads), "junctions": len(net.junctions),
         "road_length": round(sum(r.length for r in net.roads)),
-        "vegetation": nveg,
+        "vegetation": nveg, "hideouts": nhide,
     }
     return W
 

@@ -18,19 +18,34 @@ NAMES = {
                    "Captain's Table", "Saltwater Grill", "Bluefin Sushi", "Hearth & Hook"],
     "bar": ["The Rusty Anchor", "Tidewater Tavern", "Low Tide", "The Broken Oar",
             "Neptune Lounge", "Driftwood Bar", "The Salty Dog", "Undertow Club"],
-    "pawn": ["Second Chance Pawn", "Harbor Pawn & Loan", "Gold & Gear Pawn", "Quick Cash Pawn"],
-    "laundromat": ["Suds City", "Spin Cycle", "Bayside Laundry", "Fluff & Fold"],
-    "pharmacy": ["Solace Pharmacy", "Bay Drug", "Coastal Rx", "Main Street Pharmacy"],
-    "hardware": ["Hartley Hardware", "Anchor Hardware", "Nuts & Bolts", "Keel Supply Co."],
-    "electronics": ["Static Electronics", "Volt Shop", "Signal Audio & Video", "Byte Bay"],
-    "clothing": ["Thread & Tide", "Seaside Apparel", "Second Skin Thrift", "Harbor Outfitters"],
-    "furniture": ["Porter Home Furnishings", "Coastal Living Furniture", "Plank & Pillow"],
+    "pawn": ["Second Chance Pawn", "Harbor Pawn & Loan", "Gold & Gear Pawn", "Quick Cash Pawn",
+             "Anchor Pawn & Jewelry", "Lucky Seven Pawn", "Dockside Pawn", "Ace Loan & Pawn"],
+    "laundromat": ["Suds City", "Spin Cycle", "Bayside Laundry", "Fluff & Fold", "Bubble & Fold",
+                   "Tumble Town Laundry", "Clean Getaway Coin-Op", "Harbor Wash & Dry",
+                   "Quarter Spin", "Lint Trap Laundry", "Rinse Cycle", "Sea Breeze Laundry",
+                   "The Wash Tub", "Soap Opera Laundromat", "Wringer's Wash House",
+                   "Twenty-Four Seven Suds"],
+    "pharmacy": ["Solace Pharmacy", "Bay Drug", "Coastal Rx", "Main Street Pharmacy",
+                 "Harborview Drugs", "Pelican Pharmacy"],
+    "hardware": ["Hartley Hardware", "Anchor Hardware", "Nuts & Bolts", "Keel Supply Co.",
+                 "Plumb Line Hardware", "Dockyard Tool & Supply"],
+    "electronics": ["Static Electronics", "Volt Shop", "Signal Audio & Video", "Byte Bay",
+                    "Circuit Cove", "Lowband Radio & TV"],
+    "clothing": ["Thread & Tide", "Seaside Apparel", "Second Skin Thrift", "Harbor Outfitters",
+                 "Salt & Denim", "Mariner's Closet"],
+    "furniture": ["Porter Home Furnishings", "Coastal Living Furniture", "Plank & Pillow",
+                  "Driftwood Home", "Bayside Sofa Barn"],
     "office": ["Pelican Insurance", "Tidewater Realty", "Coastline Legal", "Bay Accounting",
                "Harbor Freight Brokers", "Solace Title Co.", "Marlow & Finch Attorneys"],
     "auto": ["Bay Auto Service", "Cliffside Garage", "Gearhead Auto Repair", "Pit Row Motors",
-             "Tow & Go Auto"],
+             "Tow & Go Auto", "Rusty Bolt Garage", "Mile Marker Auto", "Bayside Brake & Muffler",
+             "Gasket Brothers", "Coastline Collision", "Torque Shop", "Saltwater Auto Body"],
     "dealer": ["Solace Motors", "Bayview Auto Sales", "Coastline Cars"],
     "bank": ["Harbor Savings", "First Coastal Bank"],
+    "bakery": ["Harbor Bakery", "Rise & Brine Bakery", "Crumb & Cove", "Morning Tide Bakehouse"],
+    "barber": ["Clipper Barbershop", "Sharp Tide Barbers", "Fade Street Barbers",
+               "Old Salt Barber Co."],
+    "records": ["Low Tide Records", "Groove Harbor Records", "B-Side Vinyl", "Wax & Wire"],
 }
 
 SIGN_COLORS = [("sign_red", "sign_white"), ("sign_green", "sign_cream"),
@@ -40,7 +55,7 @@ SIGN_COLORS = [("sign_red", "sign_white"), ("sign_green", "sign_cream"),
 
 
 def _name(c: Ctx, kind):
-    return c.name or c.pick(NAMES[kind])
+    return c.name or c.pick_name(NAMES[kind])
 
 
 def biz_facade(c: Ctx, downtown=None, storefront=True):
@@ -406,9 +421,7 @@ def mixed_use(c: Ctx) -> Plan:
     floors = c.opts.get("floors") or c.pick([2, 3, 3, 4])
     stype = c.pick(["clothing", "electronics", "pharmacy", "convenience", "furniture",
                     "hardware", "bakery", "barber", "records"])
-    sname = {"bakery": "Harbor Bakery", "barber": "Clipper Barbershop",
-             "records": "Low Tide Records"}.get(stype) or (
-        c.pick(NAMES[stype]) if stype in NAMES else "Shop")
+    sname = c.pick_name(NAMES[stype]) if stype in NAMES else "Shop"
     p = Plan(w, d, [15.0] + [12.0] * (floors - 1), quality=c.quality, detail=c.detail,
              name=c.name or f"{sname} Building")
     p.facade = biz_facade(c, downtown=True)
@@ -460,7 +473,7 @@ def mixed_use(c: Ctx) -> Plan:
 def office_tower(c: Ctx) -> Plan:
     w, d = c.w, c.d
     floors = c.opts.get("floors") or c.pick([5, 6, 7])
-    name = c.name or c.pick(["Harbor Trust Building", "Meridian Tower", "Gullwing Plaza",
+    name = c.name or c.pick_name(["Harbor Trust Building", "Meridian Tower", "Gullwing Plaza",
                              "Tidewater Center"])
     p = Plan(w, d, [16.0] + [12.0] * (floors - 1), quality="nice", detail=c.detail, name=name)
     p.facade = Facade(mat=c.pick(["concrete_light", "limestone", "sandstone", "brick_tan",
@@ -580,7 +593,7 @@ def supermarket(c: Ctx) -> Plan:
            front_setback=60, rear_clear=16, side_gap=12, yard="carlot")
 def car_dealership(c: Ctx) -> Plan:
     w, d = c.w, c.d
-    name = c.name or c.pick(NAMES["dealer"])
+    name = c.name or c.pick_name(NAMES["dealer"])
     p = Plan(w, d, [18.0], quality="nice", detail=c.detail, name=name)
     p.facade = Facade(mat=c.pick(["metal_wall_white", "concrete_light", "stucco_white"]),
                       trim="frame_dark", frame="frame_dark", glass="glass_store",

@@ -26,11 +26,11 @@ def _ind_facade(c: Ctx):
 def _warehouse(c: Ctx, fish=False) -> Plan:
     w, d = c.w, c.d
     p = Plan(w, d, [12.0, 12.0, 11.0], quality=c.quality, detail=c.detail,
-             name=c.name or c.pick(["Bayline Logistics", "Coastal Freight Co.",
+             name=c.name or c.pick_name(["Bayline Logistics", "Coastal Freight Co.",
                                     "Gulfstream Distribution", "Pacific Rim Storage",
                                     "Harbor Supply Depot", "Keel & Co. Warehouse"]))
     if fish:
-        p.name = c.name or c.pick(["Solace Fish Co.", "Northbay Seafood Packers",
+        p.name = c.name or c.pick_name(["Solace Fish Co.", "Northbay Seafood Packers",
                                    "Breaker Fisheries"])
     p.facade = _ind_facade(c)
     p.roof = Roof("flat", "roof_metal", parapet=1.6, coping="metal_gray")
@@ -111,9 +111,13 @@ def warehouse_small(c: Ctx) -> Plan:
     """Single-height workshop/warehouse: one big room plus an office corner."""
     w, d = c.w, c.d
     p = Plan(w, d, [20.0], quality=c.quality, detail=c.detail,
-             name=c.name or c.pick(["Delgado Fabrication", "Seawall Construction Yard",
+             name=c.name or c.pick_name(["Delgado Fabrication", "Seawall Construction Yard",
                                     "Tri-County Plumbing Supply", "Marlow Metalworks",
-                                    "Harbor Electric Supply", "Breakwater Boatworks"]))
+                                    "Harbor Electric Supply", "Breakwater Boatworks",
+                                    "Pacific Pallet Co.", "Gull Wing Welding",
+                                    "Hartwell Cabinetry", "Coastal Tile & Stone",
+                                    "Anchor Sign Shop", "Stillwater Machine Works",
+                                    "Ironside Fabricators", "Baywater Refrigeration"]))
     p.facade = _ind_facade(c)
     p.roof = Roof("shed" if c.chance(0.4) else "flat", "roof_metal", pitch=0.12, parapet=1.2,
                   coping="metal_gray")
@@ -146,7 +150,7 @@ def storage_facility(c: Ctx) -> Plan:
     on the back facade and a loading entrance."""
     w, d = c.w, c.d
     p = Plan(w, d, [12.0], quality="normal", detail=c.detail,
-             name=c.name or c.pick(["SafeHarbor Self Storage", "Lockbox Storage",
+             name=c.name or c.pick_name(["SafeHarbor Self Storage", "Lockbox Storage",
                                     "Bay Storage Center"]))
     p.facade = Facade(mat=c.pick(["block_painted", "metal_wall_white", "stucco_cream"]),
                       trim="trim_red" if c.chance(0.5) else "trim_blue", frame="frame_alu",

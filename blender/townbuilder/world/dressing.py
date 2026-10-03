@@ -21,6 +21,22 @@ def _pp(name, x, y, z, yaw=0.0, ch=None, scale=(1.0, 1.0, 1.0)):
     return PropPlace(name, x, y, z, yaw, scale, ch or {}, False)
 
 
+# Gameplay hideouts: archetype -> (marker kind, tier, room kinds by preference,
+#                                 markers per building, buildings in town)
+HIDEOUTS = {
+    "trailer": ("safehouse", "starter", ("living",), 1, 4),
+    "motel": ("safehouse", "motel", ("motel_room",), 2, 1),
+    "apartment_lowrise": ("safehouse", "apartment", ("unit_living",), 1, 3),
+    "mixed_use": ("safehouse", "apartment", ("unit_living",), 1, 3),
+    "house_old": ("safehouse", "house", ("basement", "living"), 1, 4),
+    "warehouse_small": ("hideout", "workshop", ("workshop", "warehouse"), 1, 4),
+    "auto_shop": ("hideout", "chop shop", ("garage_bay",), 1, 2),
+    "storage_facility": ("stash", "storage unit", ("storage_unit",), 6, 1),
+    "pawn_shop": ("stash", "fence", ("storage", "office"), 1, 3),
+    "bar": ("stash", "back room", ("storage", "office"), 1, 3),
+}
+
+
 class Dresser:
     def __init__(self, world, placer, rng):
         self.W = world
@@ -708,6 +724,37 @@ class Dresser:
                                          (sc, sc, sc)), "VEGETATION"))
                 count += 1
         return count
+
+    def hideouts(self):
+        """Safehouse / hideout / stash markers in suitable rooms (spread across town)."""
+        order = list(self.W.buildings)
+        random.Random(len(order) * 7919).shuffle(order)   # own stream: keeps vegetation stable
+        used = {}
+        n_total = 0
+        for b in order:
+            spec = HIDEOUTS.get(b.arch)
+            if not spec or used.get(b.arch, 0) >= spec[4]:
+                continue
+            kind, tier, kinds, per, _ = spec
+            rooms = sorted((r for r in b.plan.rooms if r.kind in kinds and r.cells),
+                           key=lambda r: (kinds.index(r.kind), r.id))
+            if b.arch == "motel":
+                rooms = rooms[::-1]          # rooms at the far end of the wing
+            n = 0
+            for r in rooms:
+                lv = min(r.cells)
+                rect = r.cells[lv][0]
+                wx, wy, wz = b.xf.point((rect.cx, rect.cy, b.plan.level_z(lv)))
+                self.W.markers.append(Marker(kind, wx, wy, wz, b.xf.yaw,
+                                             f"{b.name} - {r.name or r.kind}",
+                                             {"tier": tier, "building": b.id, "room": r.id}))
+                n += 1
+                if n >= per:
+                    break
+            if n:
+                used[b.arch] = used.get(b.arch, 0) + 1
+                n_total += n
+        return n_total
 
     def outskirts(self):
         """Junkyard by Old Mission Road and crop fields along Farm Lane."""

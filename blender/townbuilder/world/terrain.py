@@ -19,7 +19,7 @@ RES = 4.0
 N = int(2 * L.HALF / RES) + 1        # vertices per side (641)
 
 MAT_IDS = ["grass", "lawn", "grass_dry", "dirt", "sand", "sand_wet", "rock", "gravel", "mud",
-           "grass_lush"]
+           "grass_lush", "paving"]
 MAT = {m: i for i, m in enumerate(MAT_IDS)}
 
 
@@ -287,6 +287,7 @@ class Terrain:
             mat = np.where(district_grid == 2, MAT["lawn"], mat)       # residential
             mat = np.where(district_grid == 3, MAT["dirt"], mat)       # industrial
             mat = np.where(district_grid == 4, MAT["grass_dry"], mat)  # outskirts dry fields
+            mat = np.where(district_grid == 5, MAT["paving"], mat)     # downtown hardscape
         mat = np.where((self.coast_d < 60) & (self.coast_d > -20), MAT["sand"], mat)
         mat = np.where((self.coast_d < 6) & (self.coast_d > -40), MAT["sand_wet"], mat)
         mat = np.where(self.creek_d < hw + 8, MAT["mud"], mat)
