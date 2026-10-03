@@ -17,11 +17,11 @@ building with its coordinates, see [`TOWN_DIRECTORY.md`](TOWN_DIRECTORY.md).
 | | |
 |---|---|
 | Map | 2560 × 2560 studs (1 Blender unit = 1 stud); dense core ≈ 1900 studs |
-| Buildings | ~260, all enterable, 2,500 rooms, 850 entrances (every building has at least 2) |
+| Buildings | 262, all enterable, ~2,600 rooms, 863 entrances (every building has at least 2) |
 | Roads | 51 named roads, 35k studs of road, 102 junctions (40 signalised), 5 road bridges |
 | Rail | freight line on an embankment, 5 underpasses, a truss bridge, a rail yard with a parked train |
 | Water | the sea to the south and east, a beach, a marina with 3 docks, and a creek from the hills to the harbour mouth |
-| Life | ~24k furniture and fixtures, ~8k street props, ~4k trees and plants, ~5.3k scheduled lights |
+| Life | ~25k furniture and fixtures, ~8k street props, ~4k trees and plants, ~5.4k scheduled lights |
 | Roblox | 5 × 5 streaming chunks of 512 studs, native parts plus voxel terrain (see the README) |
 
 ## Layout
@@ -243,14 +243,20 @@ on the creek. The interiors are cheap and cluttered.
 
 ## Interiors
 
+![Civic and commercial floor plans](images/interiors_civic.jpg)
+
+![Homes, apartments and offices](images/interiors_homes.jpg)
+
+*Sample floor plans of the building archetypes, rendered top-down with the roof cut away.*
+
 * **Continuity.** Facades are generated from the floor plans. Windows appear only where a
   room meets an outside wall, with sill and head heights set by the room's kind. Interior
   walls, stairs, slabs and ceilings come from the same plan, so no fake fronts or empty
   boxes are possible.
 * **Access.** Every building has a main entrance plus at least one more: secondary,
   service, loading, garage, staff, vehicle bays and so on. Multi-storey buildings have
-  real stairs (straight, U-shaped or ramps). There are 30 roof-access hatches, 28
-  basements and fire escapes on the apartment blocks.
+  real stairs (straight, U-shaped or ramps). 29 buildings have roof access and 40 have
+  basements, and the apartment blocks have fire escapes.
 * **Detail.** High detail covers landmarks, downtown, civic, mixed-use, waterfront and
   motel buildings: full decor and clutter. Medium detail covers commercial, residential
   and industrial buildings: complete furnishing and lighter clutter. Outskirts buildings
@@ -271,14 +277,15 @@ These are marked in the Roblox build as invisible parts, tagged with CollectionS
   * Flats basements and front rooms
   * the Corrigan Estate, the high-end tier
 * **Hideouts (6):** workshops and chop-shop repair bays.
-* **Stashes (12):** storage units, pawn shop intake rooms and bar keg cellars.
+* **Stashes (14):** storage units, warehouse offices, pawn shop intake rooms and bar
+  keg cellars.
 * **Vantage points:**
   * the water tower catwalk
   * the end of the pier
   * the lighthouse gallery
   * the top deck of the parking garage
   * every flat roof with a hatch
-* **Vehicles:** about 220 parked cars in garages, driveways and lots; police cruisers and
+* **Vehicles:** about 250 parked cars in garages, driveways and lots; police cruisers and
   fire engines at their stations; boats at the docks; and a freight train in the yard.
 * **Other markers:**
   * entrances, with a role and a door kind
@@ -296,14 +303,14 @@ These are marked in the Roblox build as invisible parts, tagged with CollectionS
   * Homes light up one by one on per-house schedules, and shops close up.
   * The cannery keeps a few work lights burning.
   * The lighthouse beam sweeps the bay.
-* **Lights.** About 5,300 scheduled lights in all, both interior and exterior.
+* **Lights.** About 5,400 scheduled lights in all, both interior and exterior.
 
 ## Roblox notes
 
 * **Chunks.** 25 chunks of 512 studs. Buildings are grouped per building (Exterior,
   Interior, Props, Fixtures and Signs Models), and infrastructure is grouped by category
   and chunk. `StreamingEnabled` is supported.
-* **Geometry.** Everything is native Parts using real Roblox materials: about 360k parts
+* **Geometry.** Everything is native Parts using real Roblox materials: about 365k parts
   with every interior, or about 150k as shells only. `interiorFilter` (for example,
   landmarks plus downtown only) and chunk subsets scale it down for weaker devices.
 * **Terrain.** Voxel terrain with sea and creek water, cleared from inside buildings and

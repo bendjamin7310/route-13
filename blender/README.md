@@ -132,7 +132,7 @@ Useful options for `build{...}`:
 | `colliders`, `visualParts` | `false`, `true` | for Workflow B |
 | `streaming` | `true` | enables `StreamingEnabled` (target radius 768) |
 
-Everything included, the town is about 360k parts. About 170k are structural (shells,
+Everything included, the town is about 365k parts. About 175k are structural (shells,
 interiors, roads) and about 190k belong to the ~33k furniture and prop models. Without
 interiors it's about 150k parts. Use `interiorFilter` to keep interiors only where your
 game needs them; landmark buildings and a downtown core are a common choice. Building
@@ -183,7 +183,7 @@ Objects over 19k triangles are split automatically.
 
 These marker kinds are placed in the town:
 
-* `entrance`: 857 entrances, with role main, secondary, service, loading, garage, staff,
+* `entrance`: 863 entrances, with role main, secondary, service, loading, garage, staff,
   vehicle and so on.
 * `stair`, `roof_access`, `fire_escape`, `ladder`
 * `safehouse`, `hideout`, `stash`: starter trailers, motel rooms, apartments, basements,
