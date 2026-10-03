@@ -1,0 +1,19 @@
+{
+  "name": "PortSolace",
+  "tree": {
+    "$className": "DataModel",
+    "ServerStorage": {
+      "PortSolace": {
+        "$path": "../build/roblox/PortSolace",
+        "TownBuilder": {
+          "$path": "src/TownBuilder.lua"
+        }
+      }
+    },
+    "ServerScriptService": {
+      "TownRuntime": {
+        "$path": "src/TownRuntime.server.lua"
+      }
+    }
+  }
+}
