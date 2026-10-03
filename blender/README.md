@@ -36,9 +36,10 @@ python build_town.py --out ../build --roblox --fbx --render all
 | `--no-blend` | Do not save `PortSolace.blend` |
 | `--max-buildings N` | Build only the first N lots (quick tests) |
 
-A full build takes about 9 minutes on 4 cores, plus about 1.5 minutes per preview render.
-Placement takes about 1 minute, realising the Blender scene takes about 7, and the
-exports take about 1 more. The output is deterministic for a given seed.
+A full build with `--roblox --fbx` takes about 12 minutes on 4 cores. Generating the
+world takes 1 minute, creating the Blender objects about 8, the Roblox export a few
+seconds and the FBX export about 3. Each preview render adds 1.5–3 minutes. The output
+is deterministic for a given seed.
 
 ### Outputs
 
