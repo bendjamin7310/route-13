@@ -113,6 +113,16 @@ def render_views(W, names, out, samples=32, log=print):
         if n not in VIEWS:
             continue
         loc, target, lens, res, mode = VIEWS[n]
+        if n == "motel":
+            # aim at the motel itself: from the front-left, over the parking lot
+            mb = next((b for b in W.buildings if b.arch == "motel"), None)
+            if mb is not None:
+                xf = mb.xf
+                cx, cy, cz = xf.point((mb.plan.w / 2, mb.plan.d / 2, 0.0))
+                fx, fy, _ = xf.vec((0.0, -1.0, 0.0))
+                sx, sy, _ = xf.vec((1.0, 0.0, 0.0))
+                loc = (cx + fx * 150 - sx * 70, cy + fy * 150 - sy * 70, cz + 48.0)
+                target = (cx, cy, cz + 6.0)
         if n == "street":
             r = W.net.by_name.get("Market Street")
             x, y, z, tx, ty = r.at(r.length * 0.55)
