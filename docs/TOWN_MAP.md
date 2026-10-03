@@ -47,6 +47,19 @@ map from west to east and ends in the rail yard behind the cannery.
    ─────────────── beach ─────────── pier ─────────────────────── sea
 ```
 
+## Gallery
+
+| | |
+|---|---|
+| ![Aerial view from the south-east](images/aerial.jpg) | ![Downtown](images/downtown.jpg) |
+| *Aerial view from over the harbour* | *Downtown, with the Harbor Trust Building and the parking garage* |
+| ![Civic Center](images/civic.jpg) | ![Industrial district](images/industrial.jpg) |
+| *Civic Center: the town hall clock tower, police, fire station and Harbor Bridge* | *The cannery, rail line and Riverside Park* |
+| ![Marina](images/harbor.jpg) | ![Motel Row at dusk](images/motel.jpg) |
+| *The marina and the beach* | *Motel Row at dusk* |
+| ![Market Street at dusk](images/street.jpg) | ![Downtown at night](images/night.jpg) |
+| *Street level on Market Street* | *Downtown after dark* |
+
 ## Districts
 
 ### Downtown
