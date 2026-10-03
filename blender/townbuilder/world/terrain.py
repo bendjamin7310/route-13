@@ -279,9 +279,13 @@ class Terrain:
         w = np.clip(1.0 - (bd - core) / blend, 0, 1)
         w = w * w * (3 - 2 * w)
         H = H * (1 - w) + self.best_h * w
-        # sea stays below the shore profile; dry land stays walkable above the water
-        H = np.where(self.coast_d < 0, np.minimum(H, shore),
-                     np.maximum(H, np.minimum(0.4, shore)))
+        # sea stays below the shore profile; the first few studs of land rise on a steep
+        # ramp from the same edge height (stamps may have lifted them), so the waterline
+        # stays continuous; dry land stays walkable above the water
+        cd = self.coast_d
+        H = np.where(cd < 0, np.minimum(H, shore),
+                     np.where(cd < 8.0, np.minimum(H, 0.35 + cd * 1.0), H))
+        H = np.where(cd >= 0, np.maximum(H, np.minimum(0.4, shore)), H)
         self.H = H
         # materials
         slope = np.hypot(*np.gradient(H, RES))
@@ -293,8 +297,10 @@ class Terrain:
             mat = np.where(district_grid == 3, MAT["dirt"], mat)       # industrial
             mat = np.where(district_grid == 4, MAT["grass_dry"], mat)  # outskirts dry fields
             mat = np.where(district_grid == 5, MAT["paving"], mat)     # downtown hardscape
-        mat = np.where((self.coast_d < 60) & (self.coast_d > -20), MAT["sand"], mat)
-        mat = np.where((self.coast_d < 6) & (self.coast_d > -40), MAT["sand_wet"], mat)
+        # beach: an irregular inland edge, wet sand only below the waterline (cell-sized
+        # material steps are hidden under the water instead of drawn along the shore)
+        mat = np.where((self.coast_d < 55 + noise * 5) & (self.coast_d > -20), MAT["sand"], mat)
+        mat = np.where((self.coast_d < -2.5) & (self.coast_d > -40), MAT["sand_wet"], mat)
         mat = np.where(self.creek_d < hw + 8, MAT["mud"], mat)
         mat = np.where(slope > 0.65, MAT["rock"], mat)
         mat = np.where(self.paint >= 0, self.paint, mat)
