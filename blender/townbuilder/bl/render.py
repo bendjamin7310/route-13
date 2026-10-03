@@ -63,13 +63,14 @@ def _set_mode(mode, loc=(0.0, 0.0, 0.0), target=(0.0, 0.0, 0.0)):
         for o in point_lights:
             o.hide_render = (o.get("schedule") not in ("night", "late", "always", "res", "biz")
                              or not _near(o, loc, target))
-    else:  # night
-        sun.data.energy = 0.05
-        sun.data.color = (0.6, 0.7, 1.0)
+    else:  # night: moonlight + a little sky so shapes read around the lit windows/streets
+        sun.data.energy = 0.35
+        sun.data.color = (0.55, 0.66, 1.0)
+        sun.rotation_euler = (math.radians(50), 0.0, math.radians(40))
         if sky:
-            sky.sun_elevation = math.radians(-4)
+            sky.sun_elevation = math.radians(-2)
         if bg:
-            bg.inputs[1].default_value = 0.04
+            bg.inputs[1].default_value = 0.18
         for o in point_lights:
             o.hide_render = (o.get("schedule") == "dark") or not _near(o, loc, target)
 
@@ -130,6 +131,7 @@ def render_views(W, names, out, samples=32, log=print):
             loc = (x - tx * 40 + nx * 6, y - ty * 40 + ny * 6, z + 6.5)
             target = (x + tx * 60, y + ty * 60, z + 6.0)
         _set_mode(mode, loc, target)
+        sc.view_settings.exposure = {"night": 1.6, "dusk": 0.3}.get(mode, 0.0)
         _camera(loc, target, lens)
         sc.render.resolution_x, sc.render.resolution_y = res
         sc.render.resolution_percentage = 100
