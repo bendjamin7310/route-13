@@ -16,8 +16,8 @@ Options:
     --no-blend           do not save PortSolace.blend
     --fbx                export chunked FBX files for the Roblox 3D Importer
     --roblox             export Roblox data (Luau modules, rbxmx bundles, manifest)
-    --render NAMES       comma list of preview renders (overview,downtown,harbor,motel,
-                         industrial,street,interior) or "all"
+    --render NAMES       comma list of preview renders (overview,aerial,downtown,harbor,motel,
+                         industrial,civic,street,night) or "all"
     --samples N          Cycles samples for previews (default 32)
     --lights MODE        all | night | none   (Blender light objects to create)
     --no-interiors       skip interior geometry/props in the Blender scene (exports keep them)
