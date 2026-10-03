@@ -638,9 +638,10 @@ def manifest_lua(m):
             f'{f(to_roblox_pos(e["pos"])[1])}, {f(to_roblox_pos(e["pos"])[2])})}}'
             for e in b["entrances"])
         lines.append(f'\t\t{b["id"]} = {{name = "{_escape(b["name"])}", archetype = '
-                     f'"{b["archetype"]}", district = "{b["district"]}", center = '
-                     f'Vector3.new({f(cr[0])}, {f(cr[1])}, {f(cr[2])}), levels = {b["levels"]},'
-                     f' entrances = {{{ents}}}}},')
+                     f'"{b["archetype"]}", district = "{b["district"]}", quality = '
+                     f'"{b["quality"]}", landmark = {"true" if b["landmark"] else "false"}, '
+                     f'center = Vector3.new({f(cr[0])}, {f(cr[1])}, {f(cr[2])}), '
+                     f'levels = {b["levels"]}, entrances = {{{ents}}}}},')
     lines.append("\t},")
     lines.append("}")
     return "\n".join(lines) + "\n"

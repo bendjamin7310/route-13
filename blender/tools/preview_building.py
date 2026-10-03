@@ -113,7 +113,8 @@ def main():
         z = plan.level_z(L)
         plan2, b2, sb2 = build(name, w, d, seed, cut=z + 8.0)
         setup_render()
-        camera((w / 2, d / 2, z + 200), (w / 2, d / 2, z), ortho=span * 1.15)
+        rx, ry = bpy.context.scene.render.resolution_x, bpy.context.scene.render.resolution_y
+        camera((w / 2, d / 2, z + 200), (w / 2, d / 2, z), ortho=max(w, d * rx / ry) * 1.08)
         # add an interior fill light so the plan reads
         bpy.context.scene.world.node_tree.nodes["Background"].inputs[1].default_value = 1.2
         bpy.context.scene.render.filepath = os.path.join(out, f"{name}_L{L}.png")

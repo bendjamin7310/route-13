@@ -14,6 +14,9 @@
 			chunks = { "C2_2", "C1_2" },   -- only these 512x512 chunks (nil = all 25)
 			interiors = true,             -- interior walls, floors, furniture
 			propDetail = 2,               -- 1 essential, 2 normal, 3 everything
+			interiorFilter = function(id, info)   -- e.g. interiors for landmarks + downtown only
+				return info.district == "DOWNTOWN" or info.district == "CIVIC"
+			end,
 		})
 
 	Coordinates are studs.  Everything is anchored.  The result is one Model per
@@ -35,6 +38,9 @@ TownBuilder.DEFAULTS = {
 	chunks = nil, -- list of chunk names, nil = all
 	structures = true, -- building shells + infrastructure as native parts
 	interiors = true,
+	-- nil = every building; or a list/set of building ids ({"B001", "B007"}), or
+	-- function(id, info) -> bool (info = Manifest.buildings[id]: archetype, district ...)
+	interiorFilter = nil,
 	props = true,
 	propDetail = 3,
 	lights = true,
@@ -153,6 +159,7 @@ function Builder.new(opts)
 	self.stats = { parts = 0, props = 0, lights = 0, markers = 0, signs = 0, colliders = 0, carves = 0 }
 	self.carves = {}
 	self.buildings = {}
+	self.interiorCache = {}
 	return self
 end
 
@@ -271,6 +278,34 @@ function Builder:groupContainer(chunk, header)
 	return folder(cat, chunk, "Folder"), owner
 end
 
+function Builder:interiorWanted(owner)
+	local o = self.opts
+	if not o.interiors then
+		return false
+	end
+	local f = o.interiorFilter
+	if f == nil or owner == nil then
+		return true
+	end
+	local cache = self.interiorCache
+	if cache[owner] == nil then
+		local want
+		if type(f) == "function" then
+			want = f(owner, self.Manifest.buildings and self.Manifest.buildings[owner]) and true or false
+		elseif type(f) == "table" then
+			want = f[owner] == true or table.find(f, owner) ~= nil
+		else
+			want = true
+		end
+		cache[owner] = want
+	end
+	return cache[owner]
+end
+
+local function ownerOf(header)
+	return string.match(header, "^#(B%d+)")
+end
+
 -- ---------------------------------------------------------------------------------
 -- structures
 
@@ -281,7 +316,7 @@ function Builder:buildParts(chunk, block)
 	for line in lines(block) do
 		if string.sub(line, 1, 1) == "#" then
 			container, sub = self:groupContainer(chunk, line)
-			skip = (sub == "Interior" and not opts.interiors)
+			skip = (sub == "Interior" and not self:interiorWanted(ownerOf(line)))
 		elseif not skip then
 			local f = split(line, ",")
 			local p = self:makePart(f)
@@ -298,7 +333,7 @@ function Builder:buildColliders(chunk, block)
 	for line in lines(block) do
 		if string.sub(line, 1, 1) == "#" then
 			local c, sub = self:groupContainer(chunk, line)
-			skip = (sub == "Interior" and not self.opts.interiors)
+			skip = (sub == "Interior" and not self:interiorWanted(ownerOf(line)))
 			container = folder(c, "Colliders", "Model")
 		elseif not skip then
 			local f = split(line, ",")
@@ -380,9 +415,11 @@ local PROP_TAGS = {
 function Builder:buildProps(chunk, block)
 	local opts = self.opts
 	local container = self.root
+	local owner = nil
 	for line in lines(block) do
 		if string.sub(line, 1, 1) == "#" then
 			container = self:groupContainer(chunk, line)
+			owner = ownerOf(line)
 		else
 			local f = split(line, ",")
 			local kitIdx = tonumber(f[1]) or 0
@@ -390,7 +427,7 @@ function Builder:buildProps(chunk, block)
 			local interior = bit32.band(flags, 1) == 1
 			local detail = bit32.rshift(flags, 1)
 			local def = self.Kit.defs[kitIdx]
-			if def and detail <= opts.propDetail and (opts.interiors or not interior) then
+			if def and detail <= opts.propDetail and (not interior or self:interiorWanted(owner)) then
 				local sx, sy, sz = tonumber(f[9]) or 1, tonumber(f[10]) or 1, tonumber(f[11]) or 1
 				local t = self:template(kitIdx, f[13] or "", sx, sy, sz)
 				local m = t:Clone()

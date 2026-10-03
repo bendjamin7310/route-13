@@ -125,15 +125,19 @@ Useful options for `build{...}`:
 |---|---|---|
 | `chunks` | all | e.g. `{"C2_2","C3_2"}` to build downtown and the civic centre only |
 | `interiors` | `true` | interior walls, floors and furniture |
+| `interiorFilter` | `nil` | only these buildings get interiors: a list of ids (`{"B001","B007"}`) or `function(id, info)` (`info.landmark`, `.district`, `.archetype`, `.quality` …) |
 | `propDetail` | `3` | 1 = essential furniture only, 2 = + normal, 3 = + clutter/decor |
 | `terrain`, `carve`, `water` | `true` | voxel terrain, footprint/road clearing, sea + creek |
 | `lights`, `signs`, `markers`, `props` | `true` | |
 | `colliders`, `visualParts` | `false`, `true` | for Workflow B |
 | `streaming` | `true` | enables `StreamingEnabled` (target radius 768) |
 
-The full town is about 164k structural parts plus about 31k prop instances, which come to
-about 180k parts. Use `interiors = false` or `propDetail = 1` for low-end targets. Building
-the full town in Studio takes a few minutes; it yields regularly so Studio stays responsive.
+Everything included, the town is about 360k parts. About 170k are structural (shells,
+interiors, roads) and about 190k belong to the ~33k furniture and prop models. Without
+interiors it's about 150k parts. Use `interiorFilter` to keep interiors only where your
+game needs them; landmark buildings and a downtown core are a common choice. Building
+the full town in Studio takes a few minutes; it yields regularly so Studio stays
+responsive.
 
 ### Workflow B: FBX MeshParts
 

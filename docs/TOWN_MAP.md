@@ -303,8 +303,8 @@ These are marked in the Roblox build as invisible parts, tagged with CollectionS
 * **Chunks.** 25 chunks of 512 studs. Buildings are grouped per building (Exterior,
   Interior, Props, Fixtures and Signs Models), and infrastructure is grouped by category
   and chunk. `StreamingEnabled` is supported.
-* **Geometry.** Everything is native Parts using real Roblox materials, about 180k parts
-  in total. Options such as `interiors = false`, `propDetail = 1` or a chunk subset scale
-  it down for weaker devices.
+* **Geometry.** Everything is native Parts using real Roblox materials: about 360k parts
+  with every interior, or about 150k as shells only. `interiorFilter` (for example,
+  landmarks plus downtown only) and chunk subsets scale it down for weaker devices.
 * **Terrain.** Voxel terrain with sea and creek water, cleared from inside buildings and
   from above roads.
