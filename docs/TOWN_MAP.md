@@ -43,7 +43,7 @@ map from west to east and ends in the rail yard behind the cannery.
    Westside homes    THE FLATS (creek)          INDUSTRIAL · fish plant
    (cul-de-sacs)     OLD TOWN │ DOWNTOWN │ CIVIC ── Harbor Bridge ── sea
    MOTEL ROW ── Route 13 ── COMMERCIAL STRIP ──────── WATERFRONT · marina
-   gas · diner · motel        supermarket · dealer      Salt Shack · lighthouse
+   gas · diner · motel        supermarket · dealer      Oyster Bar · lighthouse
    ─────────────── beach ─────────── pier ─────────────────────── sea
 ```
 
@@ -143,7 +143,7 @@ This is the south-east shore, plus the fish plant on the north harbour.
   lounge and sail-loft storage, with a dockmaster lookout upstairs. Three floating docks
   have moored boats.
 * **Harbor Boat Storage.** A boat barn, an engine shop and a sail loft.
-* **The Salt Shack.** A restaurant on the beach.
+* **Lighthouse Oyster Bar.** A restaurant on the beach.
 * **Other buildings.** Harbour sheds, the seawall and the public fishing pier.
 * **Solace Fish Co.** A fish processing plant with a processing floor, cold storage and
   an office block.
