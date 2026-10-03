@@ -268,6 +268,10 @@ class Terrain:
         in_creek = self.creek_d < hw + 26
         H = np.where(in_creek, np.minimum(H, bed * (1 - bank) + np.maximum(H, lvl + 1.2) * bank), H)
         self.creek_level_grid = lvl
+        # shore: heights follow the continuous coast distance so the waterline runs smoothly
+        # between grid vertices instead of stepping along the 4-stud sea mask
+        shore = self.coast_d * 0.22 + 0.35
+        H = np.where(self.coast_d < 10.0, np.minimum(H, shore), H)
         # stamps
         bd = self.best_d
         core = self.best_core
@@ -275,8 +279,9 @@ class Terrain:
         w = np.clip(1.0 - (bd - core) / blend, 0, 1)
         w = w * w * (3 - 2 * w)
         H = H * (1 - w) + self.best_h * w
-        # keep dry land above sea level near the coast (beaches stay walkable)
-        H = np.where(self.sea, np.minimum(H, -0.5), np.maximum(H, 0.4))
+        # sea stays below the shore profile; dry land stays walkable above the water
+        H = np.where(self.coast_d < 0, np.minimum(H, shore),
+                     np.maximum(H, np.minimum(0.4, shore)))
         self.H = H
         # materials
         slope = np.hypot(*np.gradient(H, RES))

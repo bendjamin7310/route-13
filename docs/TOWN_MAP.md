@@ -162,6 +162,8 @@ This is the north-east, between the rail line and the harbour.
   plant manager's office. The site has a smokestack, silos and five loading doors.
 * **Lockbox Storage.** A gated self-storage yard with a rental office, a security room,
   an indoor unit corridor and 30 units, including drive-up roll-up units.
+* **Warehouses.** Bayline Logistics and Coastal Freight Co. are tall racked halls with
+  dock doors and a two-storey office block.
 * **Workshops.** Fabrication shops, a plumbing supply, a machine shop and similar.
 * **Rail yard.** Sidings with a parked freight train, on Cannery Row, Kiln Street, Depot
   Street and Foundry Road.

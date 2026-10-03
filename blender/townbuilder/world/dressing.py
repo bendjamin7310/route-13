@@ -32,6 +32,7 @@ HIDEOUTS = {
     "warehouse_small": ("hideout", "workshop", ("workshop", "warehouse"), 1, 4),
     "auto_shop": ("hideout", "chop shop", ("garage_bay",), 1, 2),
     "storage_facility": ("stash", "storage unit", ("storage_unit",), 6, 1),
+    "warehouse": ("stash", "warehouse office", ("office",), 1, 2),
     "pawn_shop": ("stash", "fence", ("storage", "office"), 1, 3),
     "bar": ("stash", "back room", ("storage", "office"), 1, 3),
 }

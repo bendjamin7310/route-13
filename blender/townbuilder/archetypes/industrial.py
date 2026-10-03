@@ -93,8 +93,8 @@ def _warehouse(c: Ctx, fish=False) -> Plan:
     return p
 
 
-@archetype("warehouse", (100, 180), (80, 140), "INDUSTRIAL", "INDUSTRIAL", front_setback=40,
-           rear_clear=40, side_gap=14, yard="loading")
+@archetype("warehouse", (88, 150), (68, 120), "INDUSTRIAL", "INDUSTRIAL", front_setback=26,
+           rear_clear=18, side_gap=14, yard="loading")
 def warehouse(c: Ctx) -> Plan:
     return _warehouse(c)
 

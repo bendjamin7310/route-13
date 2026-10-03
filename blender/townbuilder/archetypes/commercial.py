@@ -336,8 +336,9 @@ def shop(c: Ctx) -> Plan:
     p.room("office", "office", R(sx, by, w - 9, d), name="Office")
     p.room("wc", "restroom", R(w - 9, by, w, d), name="Restroom")
     if stype == "clothing" and w >= 40:
-        p.get("stock").cells[0] = [R(0, by, sx - 8, d)]
-        p.room("fit", "closet", R(sx - 8, by, sx, d), name="Fitting Room")
+        # fitting room in the back corner so the stockroom still reaches the office
+        p.get("stock").cells[0] = [R(8, by, sx, d)]
+        p.room("fit", "closet", R(0, by, 8, d), name="Fitting Room")
         p.door("floor", "fit", kind="opening")
     p.door("floor", None, kind="glass_double", side="front", role="main")
     p.door("floor", "stock")

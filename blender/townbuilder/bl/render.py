@@ -24,7 +24,18 @@ VIEWS = {
 }
 
 
-def _set_mode(mode):
+LIGHT_RADIUS = 520.0     # dusk/night renders only light the neighbourhood of the view
+
+
+def _near(o, loc, target):
+    p = o.matrix_world.translation
+    for c in (target, loc):
+        if (p.x - c[0]) ** 2 + (p.y - c[1]) ** 2 < LIGHT_RADIUS ** 2:
+            return True
+    return False
+
+
+def _set_mode(mode, loc=(0.0, 0.0, 0.0), target=(0.0, 0.0, 0.0)):
     sc = bpy.context.scene
     sun = bpy.data.objects.get("Sun_LateAfternoon")
     w = sc.world
@@ -50,7 +61,8 @@ def _set_mode(mode):
         if bg:
             bg.inputs[1].default_value = 0.35
         for o in point_lights:
-            o.hide_render = o.get("schedule") not in ("night", "late", "always", "res", "biz")
+            o.hide_render = (o.get("schedule") not in ("night", "late", "always", "res", "biz")
+                             or not _near(o, loc, target))
     else:  # night
         sun.data.energy = 0.05
         sun.data.color = (0.6, 0.7, 1.0)
@@ -59,7 +71,7 @@ def _set_mode(mode):
         if bg:
             bg.inputs[1].default_value = 0.04
         for o in point_lights:
-            o.hide_render = False
+            o.hide_render = (o.get("schedule") == "dark") or not _near(o, loc, target)
 
 
 def _camera(loc, target, lens):
@@ -107,7 +119,7 @@ def render_views(W, names, out, samples=32, log=print):
             nx, ny = -ty, tx
             loc = (x - tx * 40 + nx * 6, y - ty * 40 + ny * 6, z + 6.5)
             target = (x + tx * 60, y + ty * 60, z + 6.0)
-        _set_mode(mode)
+        _set_mode(mode, loc, target)
         _camera(loc, target, lens)
         sc.render.resolution_x, sc.render.resolution_y = res
         sc.render.resolution_percentage = 100
