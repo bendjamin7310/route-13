@@ -307,6 +307,87 @@ class RoadNetwork:
                             acc += dz * (1 - dd / 140.0)
                     z[i] += acc
                 r.Z = z
+        # bridge decks run straight between fixed anchors (the banks and any junction on the
+        # span): a junction tent on one approach could otherwise drop the deck steeply through
+        # the bank.  A bank much higher than the far anchor is cut down along the approach at
+        # <= 12% so the deck stays drivable.  Never below the water clearance.
+        MAX_DECK, MAX_APPROACH = 0.15, 0.12
+        for r in self.roads:
+            n = len(r.Z)
+            fixed = [self._near_junction(r, k) for k in range(n)]
+            i = 0
+            while i < n:
+                if not r.bridge[i]:
+                    i += 1
+                    continue
+                a = i
+                while i < n and r.bridge[i]:
+                    i += 1
+                b = i - 1
+                lo, hi = max(0, a - 1), min(n - 1, b + 1)
+                anchors = [lo] + [k for k in range(a, b + 1) if fixed[k]] + [hi]
+                for _ in range(3):
+                    # cut a bank that is too high for the next anchor
+                    for u, v in zip(anchors, anchors[1:]):
+                        if v == u:
+                            continue
+                        limit = MAX_DECK * STEP * (v - u)
+                        if r.Z[u] - r.Z[v] > limit and u == lo:
+                            r.Z[u] = r.Z[v] + limit
+                            self._cut_approach(r, fixed, u, -1, MAX_APPROACH)
+                        if r.Z[v] - r.Z[u] > limit and v == hi:
+                            r.Z[v] = r.Z[u] + limit
+                            self._cut_approach(r, fixed, v, 1, MAX_APPROACH)
+                # water clearance as a floor, spread into ramps so sea/creek clearances
+                # meet smoothly, then the straight deck line lifted onto that floor
+                g = MAX_APPROACH * STEP
+                floor = [-1e9] * n
+                for k in range(a, b + 1):
+                    if r.water[k] is not None:
+                        floor[k] = r.water[k] + (9.0 if r.water[k] > 0.5 else 11.0)
+                for k in range(a + 1, b + 1):
+                    floor[k] = max(floor[k], floor[k - 1] - g)
+                for k in range(b - 1, a - 1, -1):
+                    floor[k] = max(floor[k], floor[k + 1] - g)
+                z0 = list(r.Z)
+                for u, v in zip(anchors, anchors[1:]):
+                    for k in range(u + 1, v):
+                        lin = z0[u] + (z0[v] - z0[u]) * (k - u) / (v - u)
+                        r.Z[k] = max(lin, floor[k])
+
+    def _cut_approach(self, r, fixed, start, step, grade):
+        """Lower the approach outward from a bank at ``grade`` until it meets the profile;
+        if a junction is reached first, blend linearly from the junction to the bank."""
+        n = len(r.Z)
+        g = grade * STEP
+        k = start + step
+        while 0 <= k < n:
+            if fixed[k]:
+                lo, hi = (k, start) if step < 0 else (start, k)
+                for m in range(lo + 1, hi):
+                    r.Z[m] = r.Z[lo] + (r.Z[hi] - r.Z[lo]) * (m - lo) / (hi - lo)
+                return
+            if r.Z[k] <= r.Z[k - step] + g:
+                return
+            r.Z[k] = r.Z[k - step] + g
+            k += step
+
+    def _near_junction(self, r, k, pad=2.0):
+        x, y = r.P[k]
+        for j in self.junctions:
+            if r.idx in j.members and math.hypot(x - j.x, y - j.y) < r.half + pad:
+                return True
+        return False
+
+    def clear_under_bridges(self, T, clearance=4.0):
+        """Cut terrain (after stamping) so nothing rises above or close under a bridge deck."""
+        for r in self.roads:
+            for i in range(len(r.P) - 1):
+                if not (r.bridge[i] and r.bridge[i + 1]):
+                    continue
+                (ax, ay), (bx, by) = r.P[i], r.P[i + 1]
+                T.cap_segment(ax, ay, r.Z[i] - clearance, bx, by, r.Z[i + 1] - clearance,
+                              r.half + 3.0, 1.0)
 
     # -- zones & arms ------------------------------------------------------------------
     def mark_zones(self):
@@ -759,7 +840,7 @@ class RoadGeometry:
             self._junction_furniture(j)
         # billboards
         for (x, y, yaw) in Lay.BILLBOARDS:
-            self.props.append(PropPlace("billboard", x, y, self.net.T.T(x, y) - 0.6, yaw,
+            self.props.append(PropPlace("billboard", x, y, self.net.T.h(x, y) - 0.6, yaw,
                                         channels={"$sign": rng.choice(["sign_blue", "sign_red",
                                                                        "sign_teal",
                                                                        "sign_yellow"])},
@@ -773,7 +854,7 @@ class RoadGeometry:
         if r.sw == 0:
             off = r.half + 3.0
         px, py = x + nx * off * side, y + ny * off * side
-        zz = z + (CURB if r.sw > 0 else self.net.T.T(px, py) - z - 0.4)
+        zz = z + (CURB if r.sw > 0 else self.net.T.h(px, py) - z - 0.4)
         # yaw so that the prop's front (local -Y) points toward the road centre
         fx, fy = -nx * side, -ny * side
         yaw = math.atan2(fx, -fy)
@@ -803,7 +884,7 @@ class RoadGeometry:
                 nx, ny = -ty, tx
                 off = r.half + r.sw + 3.0
                 px, py = x - nx * off, y - ny * off
-                pz = self.net.T.T(px, py) - 0.6
+                pz = self.net.T.h(px, py) - 0.6
                 yaw = math.atan2(ty, tx) + math.pi / 2
                 name = "utility_pole_transformer" if len(poles) % 5 == 2 else "utility_pole"
                 self.props.append(PropPlace(name, px, py, pz, yaw, interior=False))

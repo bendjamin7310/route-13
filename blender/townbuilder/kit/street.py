@@ -596,8 +596,14 @@ def flagpole(k):
 
 @prop("fountain", "civic", collide=[(-8, -8, 0, 8, 8, 2.2)])
 def fountain(k):
-    k.cyl("limestone", 0, 0, 0, 8.0, 2.2, 20)
-    k.cyl("water", 0, 0, 0.4, 7.3, 1.6, 20, collide=False)
+    # basin floor + a rim of stones, so the pool water shows from above
+    k.cyl("limestone", 0, 0, 0, 8.0, 0.6, 20)
+    n = 20
+    for i in range(n):
+        a = 2 * math.pi * (i + 0.5) / n
+        k.obox("limestone", math.cos(a) * 7.6, math.sin(a) * 7.6, 1.4,
+               0.8, 2 * math.pi * 7.6 / n + 0.12, 1.6, rot_z(a))
+    k.cyl("water", 0, 0, 0.6, 7.2, 1.2, 20, collide=False)
     k.cyl("limestone", 0, 0, 2.0, 1.4, 4.0, 10)
     k.cyl("limestone", 0, 0, 6.0, 3.0, 0.6, 14)
     k.cyl("water", 0, 0, 6.2, 2.6, 0.5, 14, collide=False)

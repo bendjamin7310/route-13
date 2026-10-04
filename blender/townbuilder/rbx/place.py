@@ -103,6 +103,122 @@ def kv(s):
     return out
 
 
+def fix_shape(kind, size):
+    """Roblox cylinders are round (diameter = min(Y, Z)) and SpecialMesh ellipsoids lose
+    their material: equalise cylinder diameters, make near-uniform ellipsoids balls."""
+    if kind == "C" and abs(size[1] - size[2]) > 1e-3:
+        d = max(size[1], size[2])
+        return kind, (size[0], d, d)
+    if kind == "E" and max(size) <= min(size) * 1.15:
+        d = sum(size) / 3.0
+        return "S", (d, d, d)
+    return kind, size
+
+
+class SpawnProbe:
+    """Collidable part boxes near the spawn plaza, to find a clear spot for the pad."""
+
+    def __init__(self, cx, cz, radius=120.0):
+        self.cx, self.cz, self.r = cx, cz, radius
+        self.boxes = []
+
+    def add(self, pos, rot, size):
+        if abs(pos[0] - self.cx) > self.r or abs(pos[2] - self.cz) > self.r:
+            return
+        ext = [sum(abs(rot[i * 3 + k]) * size[k] / 2 for k in range(3)) for i in range(3)]
+        self.boxes.append((pos[0] - ext[0], pos[1] - ext[1], pos[2] - ext[2],
+                           pos[0] + ext[0], pos[1] + ext[1], pos[2] + ext[2]))
+
+    def clear(self, x, y, z, half=7.0, height=9.0):
+        for (x0, y0, z0, x1, y1, z1) in self.boxes:
+            if x1 > x - half and x0 < x + half and z1 > z - half and z0 < z + half and \
+                    y1 > y + 0.05 and y0 < y + height:
+                return False
+        return True
+
+
+class TerrainGrid:
+    """Decoded TerrainData.lua (heights, material ids, water levels; Roblox X/Z lookups)."""
+
+    def __init__(self, path):
+        src = open(path).read()
+        self.N = int(re.search(r"size = (\d+)", src).group(1))
+        self.res = float(re.search(r"res = ([\d.]+)", src).group(1))
+        self.origin = float(re.search(r"origin = (-?[\d.]+)", src).group(1))
+        self.offset = int(re.search(r"offset = (\d+)", src).group(1))
+        self.scale = float(re.search(r"scale = ([\d.]+)", src).group(1))
+        alpha = re.search(r'alphabet = "([^"]+)"', src).group(1)
+        self.lookup = {ch: i for i, ch in enumerate(alpha)}
+        self.mat_names = re.findall(r'"([^"]+)"', re.search(r"\tmaterials = \{([^}]*)\}",
+                                                            src).group(1))
+
+        def rows(name):
+            block = re.search(r"\t" + name + r" = \{\n(.*?)\n\t\}", src, re.S).group(1)
+            return re.findall(r'"([^"]*)"', block)
+        lk = self.lookup
+        self.H = [[((lk[r[2 * j]] * 64 + lk[r[2 * j + 1]]) - self.offset) / self.scale
+                   for j in range(self.N)] for r in rows("heights")]
+        self.M = [[lk[ch] for ch in r] for r in rows("mats")]
+        self.W = [[None if r[2 * j] == "_" else
+                   ((lk[r[2 * j]] * 64 + lk[r[2 * j + 1]]) - self.offset) / self.scale
+                   for j in range(self.N)] for r in rows("water")]
+
+    def ij(self, x, z):
+        """Grid indices for Roblox X/Z (row i = Blender y = -Z)."""
+        j = (x - self.origin) / self.res
+        i = (-z - self.origin) / self.res
+        return i, j
+
+    def h(self, x, z):
+        i, j = self.ij(x, z)
+        i0 = max(0, min(self.N - 2, int(math.floor(i))))
+        j0 = max(0, min(self.N - 2, int(math.floor(j))))
+        ti, tj = min(1.0, max(0.0, i - i0)), min(1.0, max(0.0, j - j0))
+        H = self.H
+        return (H[i0][j0] * (1 - tj) + H[i0][j0 + 1] * tj) * (1 - ti) + \
+            (H[i0 + 1][j0] * (1 - tj) + H[i0 + 1][j0 + 1] * tj) * ti
+
+
+def tri_wedges(a, b, c, t):
+    """Triangle a, b, c (Roblox space) as two WedgeParts of thickness t whose upper faces lie
+    in the triangle plane.  Returns [(pos, rot row-major, size)]."""
+    def sub(u, v):
+        return (u[0] - v[0], u[1] - v[1], u[2] - v[2])
+
+    def dot(u, v):
+        return u[0] * v[0] + u[1] * v[1] + u[2] * v[2]
+
+    def cross(u, v):
+        return (u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0])
+
+    def unit(u):
+        n = math.sqrt(dot(u, u)) or 1.0
+        return (u[0] / n, u[1] / n, u[2] / n)
+    ab, ac, bc = sub(b, a), sub(c, a), sub(c, b)
+    abd, acd, bcd = dot(ab, ab), dot(ac, ac), dot(bc, bc)
+    if abd > acd and abd > bcd:
+        a, c = c, a
+    elif acd > bcd and acd > abd:
+        a, b = b, a
+    ab, ac, bc = sub(b, a), sub(c, a), sub(c, b)
+    right = unit(cross(ac, ab))
+    up = unit(cross(bc, right))
+    back = unit(bc)
+    h = abs(dot(ab, up))
+    nup = right if right[1] > 0 else (-right[0], -right[1], -right[2])
+    sh = (-nup[0] * t / 2, -nup[1] * t / 2, -nup[2] * t / 2)
+    out = []
+    for (m, r, bk, depth) in (((a, b), right, back, abs(dot(ab, back))),
+                              ((a, c), (-right[0], -right[1], -right[2]),
+                               (-back[0], -back[1], -back[2]), abs(dot(ac, back)))):
+        pos = ((m[0][0] + m[1][0]) / 2 + sh[0], (m[0][1] + m[1][1]) / 2 + sh[1],
+               (m[0][2] + m[1][2]) / 2 + sh[2])
+        rot = (r[0], up[0], bk[0], r[1], up[1], bk[1], r[2], up[2], bk[2])
+        if h > 1e-3 and depth > 1e-3:
+            out.append((pos, rot, (t, h, depth)))
+    return out
+
+
 # ---------------------------------------------------------------------------------------
 
 class Writer:
@@ -146,6 +262,7 @@ class PlaceBuilder:
         self.folders = {}
         self.stats = {"parts": 0, "props": 0, "lights": 0, "markers": 0, "signs": 0}
         self.parks = {}
+        self.spawn_probe = None
 
     # -- containers ------------------------------------------------------------------------
     def folder(self, parent, name, cls="Folder"):
@@ -204,6 +321,9 @@ class PlaceBuilder:
         return cls, p
 
     def emit_part(self, parent, kind, pos, rot, size, mat_idx, collide):
+        kind, size = fix_shape(kind, size)
+        if collide and self.spawn_probe is not None:
+            self.spawn_probe.add(pos, rot, size)
         cls, p = self.part_props(kind, pos, rot, size, mat_idx, collide)
         ref = self.w.add(parent, cls, p)
         if kind == "E":
@@ -398,6 +518,97 @@ class PlaceBuilder:
                 "FontFace": FONT_NEON if neon else FONT_SIGN})
             self.stats["signs"] += 1
 
+    # -- preview ground ------------------------------------------------------------------------
+    def preview_ground(self, grid: TerrainGrid, cell=32.0, thickness=1.2):
+        """Coarse part-based ground + water so the town is not floating in edit mode before
+        the voxel terrain is baked (buildTerrain() removes this folder)."""
+        root = self.folder(self.root, "PreviewGround")
+        land = self.folder(root, "Land", "Model")
+        water = self.folder(root, "Water", "Model")
+        half = -grid.origin
+        n = int(2 * half / cell)
+        step = int(cell / grid.res)
+        win = step // 2
+        names = grid.mat_names
+        # vertex heights: lowest 4-stud sample around each vertex, a little below the surface,
+        # so the preview never pokes through roads, floors or the real terrain
+        V = [[0.0] * (n + 1) for _ in range(n + 1)]
+        for a in range(n + 1):
+            for b in range(n + 1):
+                gi, gj = b * step, a * step       # a -> X, b -> row (Blender y)
+                lo = 1e9
+                for i in range(max(0, gi - win), min(grid.N, gi + win + 1), 2):
+                    row = grid.H[i]
+                    for j in range(max(0, gj - win), min(grid.N, gj + win + 1), 2):
+                        lo = min(lo, row[j])
+                V[a][b] = lo - 0.6
+        wedges = 0
+        for a in range(n):
+            for b in range(n):
+                gi0, gj0 = b * step, a * step
+                cnt = {}
+                wet = sea = 0
+                wl = []
+                for i in range(gi0, min(grid.N, gi0 + step), 2):
+                    for j in range(gj0, min(grid.N, gj0 + step), 2):
+                        m = grid.M[i][j]
+                        cnt[m] = cnt.get(m, 0) + 1
+                        w = grid.W[i][j]
+                        if w is not None:
+                            wet += 1
+                            wl.append(w)
+                            if abs(w) < 0.01:
+                                sea += 1
+                total = sum(cnt.values())
+                x0 = grid.origin + a * cell
+                x1 = x0 + cell
+                # Blender y rows -> Roblox z = -y
+                z0 = -(grid.origin + b * cell)
+                z1 = -(grid.origin + (b + 1) * cell)
+                corners = [(x0, V[a][b], z0), (x1, V[a + 1][b], z0),
+                           (x1, V[a + 1][b + 1], z1), (x0, V[a][b + 1], z1)]
+                if wet:
+                    lvl = max(wl)
+                    if sea == wet:
+                        lvl = 0.0
+                    if wet * 4 >= total:
+                        self.w.add(water, "Part", {
+                            "Name": "Water", "Anchored": True, "CanCollide": False,
+                            "CanTouch": False, "CanQuery": False, "CastShadow": False,
+                            "Size": [cell, 1.0, cell],
+                            "CFrame": cf(((x0 + x1) / 2, lvl - 0.55, (z0 + z1) / 2)),
+                            "Material": "SmoothPlastic", "Color": [52 / 255, 102 / 255, 118 / 255],
+                            "Transparency": 0.3, "TopSurface": "Smooth",
+                            "BottomSurface": "Smooth"})
+                    if all(c[1] < lvl - 3.0 for c in corners):
+                        continue                  # fully under water: the floor is not needed
+                mid = max(cnt, key=cnt.get)
+                pal_name = names[mid] if mid < len(names) else "grass"
+                e = pal.P.get(pal_name, pal.P["grass"])
+                color = [c / 255.0 for c in e["rgb"]]
+                for tri in ((corners[0], corners[1], corners[2]),
+                            (corners[0], corners[2], corners[3])):
+                    for (pos, rot, size) in tri_wedges(*tri, thickness):
+                        self.w.add(land, "WedgePart", {
+                            "Anchored": True, "CanTouch": False, "CastShadow": False,
+                            "Size": [round(v, 4) for v in size], "CFrame": cf(pos, rot),
+                            "Material": e["rbx"], "Color": color,
+                            "TopSurface": "Smooth", "BottomSurface": "Smooth"})
+                        wedges += 1
+        self.stats["preview_wedges"] = wedges
+
+    def spawn_spot(self, grid: TerrainGrid):
+        """A clear 12x12 spot on the Town Square lawn (first ring around the marker)."""
+        sx, sy, sz = getattr(self, "square", (164.4, 8.2, 60.4))
+        for r in (0.0, 14.0, 20.0, 26.0, 32.0, 40.0, 48.0, 56.0):
+            for k in range(16 if r else 1):
+                a = 2 * math.pi * k / 16
+                x, z = sx + math.cos(a) * r, sz + math.sin(a) * r
+                y = grid.h(x, z)
+                if abs(y - sy) < 3.0 and self.spawn_probe.clear(x, y, z):
+                    return (x, y, z)
+        return (sx + 30.0, sy, sz)
+
     # -- top level -----------------------------------------------------------------------------
     def build_town(self, workspace_ref, chunk_names=None):
         self.root = self.w.add(workspace_ref, "Folder", {"Name": "PortSolace"},
@@ -407,10 +618,19 @@ class PlaceBuilder:
         self.world_root = self.folder(self.root, "World")
         cdir = os.path.join(self.data_dir, "Chunks")
         names = chunk_names or sorted(fn[:-4] for fn in os.listdir(cdir) if fn.endswith(".lua"))
-        carve = []
+        chunks = []
         for name in names:
             src = open(os.path.join(cdir, name + ".lua")).read()
             blocks = {m.group(1): m.group(3) for m in BLOCK_RE.finditer(src)}
+            chunks.append((name, blocks))
+            for line in blocks.get("markers", "").split("\n"):
+                f = line.split(",")
+                if len(f) > 5 and f[0] == "park" and f[5] == "Town Square":
+                    self.square = (float(f[1]), float(f[2]), float(f[3]))
+        sq = getattr(self, "square", (164.4, 8.2, 60.4))
+        self.spawn_probe = SpawnProbe(sq[0], sq[2])
+        carve = []
+        for name, blocks in chunks:
             self.parts_block(name, blocks.get("parts", ""))
             self.props_block(name, blocks.get("props", ""))
             self.lights_block(name, blocks.get("lights", ""))
@@ -441,25 +661,33 @@ def lighting(w: Writer):
 
 
 def write_instances(data_dir, manifest_path, out_jsonl, mode="place", interiors=True,
-                    prop_detail=3, log=print):
+                    prop_detail=3, preview=True, log=print):
     """Expand the Roblox export into an instance list for rbxconv."""
     manifest = json.load(open(manifest_path))
+    grid = TerrainGrid(os.path.join(data_dir, "TerrainData.lua"))
     w = Writer(out_jsonl)
+    ws = None
     if mode == "place":
+        # CurrentCamera is a Ref resolved by rbxconv once the camera exists
         ws = w.add(None, "Workspace", {"StreamingEnabled": True, "StreamingTargetRadius": 768,
-                                       "StreamingMinRadius": 256})
-    else:
-        ws = None
+                                       "StreamingMinRadius": 256,
+                                       "CurrentCamera": {"ref": 2}})
+        eye, at = (520.0, 230.0, 470.0), (164.0, 8.0, 60.0)
+        d = (at[0] - eye[0], at[1] - eye[1], at[2] - eye[2])
+        w.add(ws, "Camera", {"Name": "Camera", "CFrame": cf(eye, look_at(eye, d)),
+                             "Focus": cf(at), "FieldOfView": 70.0})
     pb = PlaceBuilder(data_dir, manifest, w, interiors=interiors, prop_detail=prop_detail)
     carve = pb.build_town(ws)
-    # spawn on the town square (players land in the middle of town)
-    if mode == "place":
-        sx, sy, sz = pb.parks.get("Town Square", (164.4, 8.2, 60.4))
-        w.add(ws, "SpawnLocation", {
-            "Name": "TownSquareSpawn", "Anchored": True, "Neutral": True, "Size": [12, 1, 12],
-            "CFrame": cf((sx, sy + 0.1, sz)), "Material": "Cobblestone",
-            "Color": [0.62, 0.6, 0.56], "TopSurface": "Smooth", "BottomSurface": "Smooth",
-            "Duration": 0})
+    if preview:
+        pb.preview_ground(grid)
+    # spawn on a clear spot of the town square (it has ground even before the terrain)
+    x, y, z = pb.spawn_spot(grid)
+    pb.stats["spawn"] = (round(x, 1), round(y, 1), round(z, 1))
+    w.add(ws if mode == "place" else pb.root, "SpawnLocation", {
+        "Name": "TownSquareSpawn", "Anchored": True, "Neutral": True, "Size": [12, 1, 12],
+        "CFrame": cf((x, y + 0.1, z)), "Material": "Cobblestone",
+        "Color": [0.62, 0.6, 0.56], "TopSurface": "Smooth", "BottomSurface": "Smooth",
+        "Duration": 0})
     # scripts + data
     rd = lambda p: open(p).read()
     if mode == "place":
@@ -467,8 +695,9 @@ def write_instances(data_dir, manifest_path, out_jsonl, mode="place", interiors=
         sss = w.add(None, "ServerScriptService", {})
         store = w.add(w.add(None, "ServerStorage", {}), "Folder", {"Name": "PortSolace"})
     else:
-        sss = pb.folder(pb.root, "Scripts (move to ServerScriptService)")
-        store = pb.folder(pb.root, "Data (move to ServerStorage)")
+        # a model: scripts run from the town folder itself, data sits next to them
+        sss = pb.root
+        store = pb.folder(pb.root, "PortSolaceData")
     w.add(sss, "Script", {"Name": "TownRuntime",
                           "Source": rd(os.path.join(REPO_ROBLOX, "TownRuntime.server.lua"))})
     w.add(sss, "Script", {"Name": "TerrainLoader",
@@ -486,7 +715,7 @@ def write_instances(data_dir, manifest_path, out_jsonl, mode="place", interiors=
         "Source": f"-- Generated: terrain volumes cleared inside buildings and above roads\n"
                   f"return [{eq}[\n{carve}\n]{eq}]\n"})
     w.close()
-    log(f"place: {w.n} instances ({pb.stats})")
+    log(f"{os.path.basename(out_jsonl)}: {w.n} instances ({pb.stats})")
     return w.n, pb.stats, w.counts
 
 

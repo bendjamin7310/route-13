@@ -793,5 +793,5 @@ class Dresser:
             for k in range(int(fw / 6)):
                 x = fx - fw / 2 + 3 + k * 6
                 self.W.boxes.append(("OUTSKIRTS", Prim("box", "leaf_light" if k % 2 else
-                                                       "leaf", (x, fy, self.T.T(x, fy) + 0.4),
+                                                       "leaf", (x, fy, self.T.h(x, fy) + 0.4),
                                                        (2.4, fd, 1.4), rot_z(0.0), False)))

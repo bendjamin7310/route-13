@@ -198,6 +198,24 @@ class Terrain:
         h = az + t * (bz - az)
         self._apply(i0, i1, j0, j1, d, h, core, blend, paint)
 
+    def cap_segment(self, ax, ay, az, bx, by, bz, core, slope):
+        """After finalize: lower the surface to at most the segment height within ``core``,
+        rising ``slope`` per stud outside it (cuts banks under bridge decks)."""
+        r = core + 60.0
+        i0, i1, j0, j1 = self._region(min(ax, bx) - r, min(ay, by) - r, max(ax, bx) + r,
+                                      max(ay, by) + r)
+        if i0 >= i1 or j0 >= j1:
+            return
+        X = self.X[i0:i1, j0:j1]
+        Y = self.Y[i0:i1, j0:j1]
+        dx, dy = bx - ax, by - ay
+        l2 = dx * dx + dy * dy
+        t = np.zeros(X.shape) if l2 < 1e-9 else \
+            np.clip(((X - ax) * dx + (Y - ay) * dy) / l2, 0, 1)
+        d = np.hypot(X - (ax + t * dx), Y - (ay + t * dy))
+        cap = az + t * (bz - az) + np.maximum(d - core, 0.0) * slope
+        self.H[i0:i1, j0:j1] = np.minimum(self.H[i0:i1, j0:j1], cap)
+
     def stamp_rect(self, corners, z, margin, blend, paint=None):
         """Flatten an oriented rectangle (lot pad) plus margin, blending outside."""
         xs = [p[0] for p in corners]

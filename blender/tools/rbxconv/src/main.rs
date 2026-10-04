@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 
 use anyhow::{anyhow, bail, Context, Result};
 use rbx_dom_weak::{InstanceBuilder, WeakDom};
@@ -157,6 +157,7 @@ fn build(mode: &str, input: &str, output: &str) -> Result<()> {
     let mut top = Vec::new();
     let mut cache: HashMap<(String, String), (String, DataType)> = HashMap::new();
     let mut counts: HashMap<String, usize> = HashMap::new();
+    let mut pending: Vec<(rbx_dom_weak::types::Ref, String, i64)> = Vec::new();
     let reader = BufReader::new(File::open(input).with_context(|| format!("open {input}"))?);
     for (lineno, line) in reader.lines().enumerate() {
         let line = line?;
@@ -169,6 +170,7 @@ fn build(mode: &str, input: &str, output: &str) -> Result<()> {
             bail!("line {}: unknown class {class}", lineno + 1);
         }
         let mut b = InstanceBuilder::new(class);
+        let mut refs_here: Vec<(String, i64)> = Vec::new();
         if let Some(props) = rec["props"].as_object() {
             for (k, v) in props {
                 if k == "Name" {
@@ -181,6 +183,12 @@ fn build(mode: &str, input: &str, output: &str) -> Result<()> {
                     cache.insert(key.clone(), d);
                 }
                 let (canon, ty) = &cache[&key];
+                if matches!(ty, DataType::Value(VariantType::Ref)) {
+                    // {"ref": id}: resolved once every instance exists
+                    let target = v["ref"].as_i64().ok_or_else(|| anyhow!("line {}: {k} needs {{\"ref\": id}}", lineno + 1))?;
+                    refs_here.push((canon.clone(), target));
+                    continue;
+                }
                 let var = to_variant(db, ty, v)
                     .with_context(|| format!("line {}: {class}.{k} = {v}", lineno + 1))?;
                 b = b.with_property(canon.as_str(), var);
@@ -210,13 +218,25 @@ fn build(mode: &str, input: &str, output: &str) -> Result<()> {
         }
         let id = rec["r"].as_i64().ok_or_else(|| anyhow!("line {}: no id", lineno + 1))?;
         refs.insert(id, r);
+        for (name, target) in refs_here {
+            pending.push((r, name, target));
+        }
         *counts.entry(class.to_string()).or_default() += 1;
     }
-    let out = BufWriter::new(File::create(output)?);
+    for (inst, name, target) in pending {
+        let t = *refs.get(&target).ok_or_else(|| anyhow!("ref target {target} not found"))?;
+        dom.get_by_ref_mut(inst)
+            .unwrap()
+            .properties
+            .insert(name.as_str().into(), Variant::Ref(t));
+    }
+    let mut out = BufWriter::new(File::create(output)?);
     match mode {
-        "place" | "model" => rbx_binary::to_writer(out, &dom, &top)?,
+        "place" | "model" => rbx_binary::to_writer(&mut out, &dom, &top)?,
         _ => bail!("mode must be place or model"),
     }
+    out.flush()?;
+    out.into_inner().map_err(|e| anyhow!("flush {output}: {e}"))?.sync_all()?;
     let mut c: Vec<_> = counts.into_iter().collect();
     c.sort_by(|a, b| b.1.cmp(&a.1));
     let total: usize = c.iter().map(|x| x.1).sum();

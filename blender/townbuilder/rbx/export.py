@@ -355,14 +355,19 @@ def export_roblox(W, out, log=print):
             if p.collide:
                 cd.colliders.append(box_line(p))
             if sw.cat in CARVE_CATS and p.size[0] > 2.5:
-                cd.carve.append(box_line(carve_above(p)))
+                # clear at least 10 studs, and always up through the terrain surface
+                top = p.pos[2] + p.size[2] / 2
+                clear = max(10.0, W.terrain.h(p.pos[0], p.pos[1]) - top + 2.0)
+                cd.carve.append(box_line(carve_above(p, clear)))
     for patch in W.patches:
         cd = ch(*patch[4])
         cd.parts.append(f"#Infrastructure|{patch[0].title()}")
         for p in patch_boxes(patch):
             cd.parts.append(part_line(p))
             cd.colliders.append(box_line(p))
-            cd.carve.append(box_line(carve_above(p)))
+            top = p.pos[2] + p.size[2] / 2
+            clear = max(10.0, W.terrain.h(p.pos[0], p.pos[1]) - top + 2.0)
+            cd.carve.append(box_line(carve_above(p, clear)))
     for (cat, p) in W.boxes:
         cd = ch(p.pos[0], p.pos[1])
         cd.parts.append(f"#Infrastructure|{cat.title()}")
@@ -530,6 +535,18 @@ def kit_lua():
 
 B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
+# Materials Roblox voxel terrain accepts (Pebble, Plastic, Fabric ... are part-only)
+TERRAIN_MATERIALS = {"Grass", "Slate", "Concrete", "Brick", "Sand", "WoodPlanks", "Rock",
+                     "Glacier", "Snow", "Sandstone", "Mud", "Basalt", "Ground", "CrackedLava",
+                     "Asphalt", "Cobblestone", "Ice", "LeafyGrass", "Salt", "Limestone",
+                     "Pavement"}
+TERRAIN_SUBSTITUTE = {"Pebble": "Ground"}
+
+
+def terrain_material(rbx):
+    m = TERRAIN_SUBSTITUTE.get(rbx, rbx)
+    return m if m in TERRAIN_MATERIALS else "Ground"
+
 
 def _enc2(v):
     v = max(0, min(4095, int(v)))
@@ -561,7 +578,7 @@ def terrain_lua(T):
         rows_m.append("".join(rm))
         rows_w.append("".join(rw))
     mats = ",".join(f'"{m}"' for m in MAT_IDS)
-    rbxm = ",".join(f'"{pal.P[m]["rbx"]}"' for m in MAT_IDS)
+    rbxm = ",".join(f'"{terrain_material(pal.P[m]["rbx"])}"' for m in MAT_IDS)
     return ("-- Generated terrain: 4-stud grid, row i = Blender Y (Roblox -Z), col j = X\n"
             "return {\n"
             f"\tsize = {N}, res = {RES}, origin = {-Lay.HALF}, offset = 512, scale = 4,\n"

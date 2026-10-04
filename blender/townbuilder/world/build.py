@@ -90,6 +90,7 @@ def build_world(seed=7, density=1.0, veg_density=1.0, max_buildings=None, log_fn
         m = _poly_mask(X, Y, poly)
         T.paint = np.where(m, 1 if name != "Solace Beach" else 4, T.paint)
     T.finalize(dg)
+    net.clear_under_bridges(T)
     log_fn("terrain finalized")
 
     # ---- roads + rail geometry ----------------------------------------------------------

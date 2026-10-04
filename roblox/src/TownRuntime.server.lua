@@ -148,15 +148,8 @@ local function tweenPivot(model, target)
 	tw:Play()
 end
 
-local function openTarget(model, closed, player)
-	local kind = model:GetAttribute("DoorKind") or "hinged"
+local function hingeTarget(model, closed, player)
 	local width = model:GetAttribute("width") or 4
-	local height = model:GetAttribute("height") or 7.5
-	if kind == "garage" or kind == "rollup" then
-		return closed * CFrame.new(0, height * 0.85, 0)
-	elseif kind == "sliding" or kind == "double" then
-		return closed * CFrame.new(-width * 0.85, 0, 0)
-	end
 	local hinge = model:GetAttribute("hinge") or -width / 2
 	local side = 1
 	local char = player and player.Character
@@ -170,6 +163,68 @@ local function openTarget(model, closed, player)
 	return closed * h * CFrame.Angles(0, angle, 0) * h:Inverse()
 end
 
+-- Non-hinged doors move individual parts (door-local space: X across, Y up, Z depth):
+--   double  - each leaf slides outward into the wall
+--   sliding - the moving pane slides over the fixed one
+--   garage / rollup - the panel folds up into a band at the top of the opening
+local FOLD = 0.12
+
+local function partMoves(model, closed, kind)
+	local width = model:GetAttribute("width") or 4
+	local height = model:GetAttribute("height") or 7.5
+	local moves = {}
+	for _, p in ipairs(model:GetDescendants()) do
+		if p:IsA("BasePart") then
+			local lc = closed:ToObjectSpace(p.CFrame)
+			local lp = lc.Position
+			local openLocal, openSize = nil, p.Size
+			if kind == "double" then
+				local dir = lp.X < 0 and -1 or 1
+				openLocal = CFrame.new(dir * width * 0.48, 0, 0) * lc
+			elseif kind == "sliding" then
+				if lp.X > 0 and lp.X < width * 0.45 then
+					openLocal = CFrame.new(-width * 0.45, 0, 0.14) * lc
+				end
+			else -- garage / rollup: fold everything below the housing into the top band
+				local bottom = lp.Y - p.Size.Y / 2
+				if bottom < height * 0.9 then
+					local y = height * (1 - FOLD) + lp.Y * FOLD
+					openLocal = CFrame.new(lp.X, y, lp.Z) * lc.Rotation
+					openSize = Vector3.new(p.Size.X, math.max(0.05, p.Size.Y * FOLD), p.Size.Z)
+				end
+			end
+			if openLocal then
+				table.insert(moves, {
+					part = p,
+					closedCF = p.CFrame,
+					closedSize = p.Size,
+					openCF = closed * openLocal,
+					openSize = openSize,
+				})
+			end
+		end
+	end
+	return moves
+end
+
+local function tweenParts(moves, opening)
+	local nv = Instance.new("NumberValue")
+	nv.Value = opening and 0 or 1
+	nv.Changed:Connect(function(a)
+		for _, m in ipairs(moves) do
+			m.part.CFrame = m.closedCF:Lerp(m.openCF, a)
+			m.part.Size = m.closedSize:Lerp(m.openSize, a)
+		end
+	end)
+	local tw = TweenService:Create(nv, TweenInfo.new(OPEN_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Value = opening and 1 or 0,
+	})
+	tw.Completed:Connect(function()
+		nv:Destroy()
+	end)
+	tw:Play()
+end
+
 local function setupDoor(model)
 	if not model:IsA("Model") or model:GetAttribute("PS_DoorReady") then
 		return
@@ -180,11 +235,16 @@ local function setupDoor(model)
 	end
 	model:SetAttribute("PS_DoorReady", true)
 	local closed = model:GetAttribute("ClosedPivot") or model:GetPivot()
+	local kind = model:GetAttribute("DoorKind") or "hinged"
+	local moves = nil
+	if kind ~= "hinged" then
+		moves = partMoves(model, closed, kind)
+	end
 	local att = Instance.new("Attachment")
 	att.Name = "DoorPrompt"
 	att.Parent = leaf
 	local prompt = Instance.new("ProximityPrompt")
-	prompt.ObjectText = (model:GetAttribute("role") == "entrance") and "Entrance" or "Door"
+	prompt.ObjectText = model:GetAttribute("Interior") and "Door" or "Entrance"
 	prompt.ActionText = "Open"
 	prompt.MaxActivationDistance = 8
 	prompt.RequiresLineOfSight = false
@@ -212,8 +272,10 @@ local function setupDoor(model)
 		end
 		busy = true
 		open = not open
-		if open then
-			tweenPivot(model, openTarget(model, closed, player))
+		if moves then
+			tweenParts(moves, open)
+		elseif open then
+			tweenPivot(model, hingeTarget(model, closed, player))
 		else
 			tweenPivot(model, closed)
 		end

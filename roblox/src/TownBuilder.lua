@@ -4,6 +4,10 @@
 	Builds the generated town inside Roblox Studio from the data modules written by
 	blender/build_town.py --roblox (Palette, Kit, TerrainData, Manifest, Chunks/*).
 
+	Already have PortSolace.rbxl (the prebuilt place)?  Only the terrain step is needed:
+
+		require(game.ServerStorage.PortSolace.TownBuilder).buildTerrain()
+
 	Usage (Studio command bar, after inserting PortSolace.rbxmx into ServerStorage):
 
 		require(game.ServerStorage.PortSolace.TownBuilder).build()
@@ -126,6 +130,16 @@ local function folder(parent, name, class)
 	return f
 end
 
+-- materials voxel terrain accepts
+local TERRAIN_MATERIALS = {}
+for _, n in ipairs({
+	"Grass", "Slate", "Concrete", "Brick", "Sand", "WoodPlanks", "Rock", "Glacier", "Snow",
+	"Sandstone", "Mud", "Basalt", "Ground", "CrackedLava", "Asphalt", "Cobblestone", "Ice",
+	"LeafyGrass", "Salt", "Limestone", "Pavement",
+}) do
+	TERRAIN_MATERIALS[n] = true
+end
+
 -- ---------------------------------------------------------------------------------
 -- builder state
 
@@ -137,6 +151,14 @@ function Builder.new(opts)
 	self.opts = opts
 	local data = opts.data
 	self.data = data
+	if not data:FindFirstChild("Kit") then
+		error(
+			"[PortSolace] this data folder has no Kit/Chunks modules: the town is already built "
+				.. "into this place. Use TownBuilder.buildTerrain() here, or insert PortSolace.rbxmx "
+				.. "into an empty place to build from scratch.",
+			2
+		)
+	end
 	self.Palette = require(data:WaitForChild("Palette"))
 	self.Kit = require(data:WaitForChild("Kit"))
 	self.Manifest = require(data:WaitForChild("Manifest"))
@@ -213,11 +235,30 @@ local SHAPES = {
 	end,
 }
 
+-- Roblox cylinders are round (diameter = min of Y/Z) and SpecialMesh ellipsoids lose their
+-- material, so: equal cylinder diameters, and near-uniform ellipsoids become balls.
+local function fixShape(kind, size)
+	if kind == "C" and math.abs(size.Y - size.Z) > 1e-3 then
+		local d = math.max(size.Y, size.Z)
+		return kind, Vector3.new(size.X, d, d)
+	elseif kind == "E" then
+		local lo = math.min(size.X, size.Y, size.Z)
+		local hi = math.max(size.X, size.Y, size.Z)
+		if hi <= lo * 1.15 then
+			local d = (size.X + size.Y + size.Z) / 3
+			return "S", Vector3.new(d, d, d)
+		end
+	end
+	return kind, size
+end
+
 -- Part record: K,x,y,z,qx,qy,qz,qw,sx,sy,sz,mat,collide
 function Builder:makePart(f, matIdx, cf, size)
-	local p = (SHAPES[f[1]] or SHAPES.B)()
+	local kind
+	kind, size = fixShape(f[1], size or v3(f, 9))
+	local p = (SHAPES[kind] or SHAPES.B)()
 	p.Anchored = true
-	p.Size = size or v3(f, 9)
+	p.Size = size
 	p.CFrame = cf or cf7(f, 2)
 	self:applyMat(p, matIdx or tonumber(f[12]))
 	local collide = f[13] == "1"
@@ -628,11 +669,14 @@ function Builder:buildTerrain()
 	end
 	local mats = {}
 	for i, name in ipairs(TD.robloxMaterials) do
-		local ok, m = pcall(function()
-			return Enum.Material[name]
-		end)
-		mats[i - 1] = (ok and m) or Enum.Material.Grass
+		-- only terrain-capable materials (Pebble, Plastic ... are part-only)
+		mats[i - 1] = TERRAIN_MATERIALS[name] and Enum.Material[name] or Enum.Material.Ground
 	end
+	terrain.WaterColor = Color3.fromRGB(52, 102, 118)
+	terrain.WaterTransparency = 0.55
+	terrain.WaterReflectance = 0.6
+	terrain.WaterWaveSize = 0.12
+	terrain.WaterWaveSpeed = 8
 	local UNDER = Enum.Material.Rock
 	local AIR = Enum.Material.Air
 	local WATER = Enum.Material.Water
@@ -683,8 +727,22 @@ function Builder:buildTerrain()
 	local nvox = math.floor(2 * half / 4)
 	local useChannels = self.opts.water
 	local channelsOk = true
+	-- nearest slabs first, so the ground around the spawn exists within a second or two
+	local focus = self.opts.terrainFocus or Vector3.new(164, 0, 60)
+	local slabs = {}
 	for sx = 0, nvox - 1, SLAB do
 		for sz = 0, nvox - 1, SLAB do
+			local cx = -half + (sx + SLAB / 2) * 4
+			local cz = -half + (sz + SLAB / 2) * 4
+			table.insert(slabs, { sx, sz, (cx - focus.X) ^ 2 + (cz - focus.Z) ^ 2 })
+		end
+	end
+	table.sort(slabs, function(a, b)
+		return a[3] < b[3]
+	end)
+	for slabIndex, slab in ipairs(slabs) do
+		local sx, sz = slab[1], slab[2]
+		do
 			local cols = {}
 			local lo, hi = math.huge, -math.huge
 			local nx = math.min(SLAB, nvox - sx)
@@ -772,7 +830,15 @@ function Builder:buildTerrain()
 				end
 			end
 			if not wrote then
-				terrain:WriteVoxels(region, 4, matA, occA)
+				local ok, err = pcall(function()
+					terrain:WriteVoxels(region, 4, matA, occA)
+				end)
+				if not ok then
+					warn("[PortSolace] terrain slab failed:", err)
+				end
+			end
+			if slabIndex % 50 == 0 then
+				self:log(string.format("terrain %d/%d", slabIndex, #slabs))
 			end
 			task.wait()
 		end
@@ -977,6 +1043,16 @@ function TownBuilder.buildTerrain(options)
 		b:carveTerrain()
 	end
 	workspace.Terrain:SetAttribute("PortSolaceTerrain", true)
+	-- the prebuilt place ships a coarse part-based preview of the ground; real terrain
+	-- replaces it
+	local town = workspace:FindFirstChild("PortSolace")
+	local preview = town and town:FindFirstChild("PreviewGround")
+	if preview then
+		preview:Destroy()
+	end
+	if opts.verbose then
+		print("[PortSolace] terrain done - save the place (File > Save) to keep it")
+	end
 	return b.stats
 end
 
