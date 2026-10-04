@@ -952,16 +952,31 @@ function TownBuilder.buildTerrain(options)
 		opts[k] = v
 	end
 	opts.data = opts.data or script.Parent
-	local b = Builder.new(opts)
+	-- terrain needs only TerrainData (+ CarveData or the chunk modules), not the kit/palette
+	local b = setmetatable({
+		opts = opts,
+		data = opts.data,
+		count = 0,
+		carves = {},
+		stats = { carves = 0 },
+	}, Builder)
 	b:buildTerrain()
 	if opts.carve then
-		for _, mod in ipairs(b.data:WaitForChild("Chunks"):GetChildren()) do
-			for line in lines(require(mod).carve) do
+		local carveData = b.data:FindFirstChild("CarveData")
+		if carveData then
+			for line in lines(require(carveData)) do
 				table.insert(b.carves, split(line, ","))
+			end
+		else
+			for _, mod in ipairs(b.data:WaitForChild("Chunks"):GetChildren()) do
+				for line in lines(require(mod).carve) do
+					table.insert(b.carves, split(line, ","))
+				end
 			end
 		end
 		b:carveTerrain()
 	end
+	workspace.Terrain:SetAttribute("PortSolaceTerrain", true)
 	return b.stats
 end
 

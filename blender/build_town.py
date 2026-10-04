@@ -16,6 +16,9 @@ Options:
     --no-blend           do not save PortSolace.blend
     --fbx                export chunked FBX files for the Roblox 3D Importer
     --roblox             export Roblox data (Luau modules, rbxmx bundles, manifest)
+    --place              also write ready-to-open Roblox files (implies --roblox):
+                         PortSolace.rbxl, PortSolace_Lite.rbxl, PortSolace_Town.rbxm
+                         (needs cargo for tools/rbxconv)
     --render NAMES       comma list of preview renders (overview,aerial,downtown,harbor,motel,
                          industrial,civic,street,night) or "all"
     --samples N          Cycles samples for previews (default 32)
@@ -45,6 +48,7 @@ def parse():
     ap.add_argument("--no-blend", action="store_true")
     ap.add_argument("--fbx", action="store_true")
     ap.add_argument("--roblox", action="store_true")
+    ap.add_argument("--place", action="store_true")
     ap.add_argument("--render", default="")
     ap.add_argument("--samples", type=int, default=32)
     ap.add_argument("--lights", default="all")
@@ -75,9 +79,12 @@ def main():
     bpy.context.scene.unit_settings.system = "NONE"
     bpy.context.scene["town_name"] = "Port Solace"
     bpy.context.scene["studs_per_unit"] = 1.0
-    if a.roblox:
+    if a.roblox or a.place:
         from townbuilder.rbx.export import export_roblox
         export_roblox(W, os.path.join(out, "roblox"), log=log)
+    if a.place:
+        from townbuilder.rbx.place import build_all
+        build_all(os.path.join(out, "roblox"), log=log)
     if a.fbx:
         from townbuilder.bl.export_fbx import export_fbx
         export_fbx(os.path.join(out, "fbx"), log=log)
