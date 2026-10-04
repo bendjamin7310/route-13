@@ -604,7 +604,7 @@ def fountain(k):
         k.obox("limestone", math.cos(a) * 7.6, math.sin(a) * 7.6, 1.4,
                0.8, 2 * math.pi * 7.6 / n + 0.12, 1.6, rot_z(a))
     k.cyl("water", 0, 0, 0.6, 7.2, 1.2, 20, collide=False)
-    k.cyl("limestone", 0, 0, 2.0, 1.4, 4.0, 10)
+    k.cyl("limestone", 0, 0, 0.6, 1.4, 5.4, 10)      # pedestal rises from the basin floor
     k.cyl("limestone", 0, 0, 6.0, 3.0, 0.6, 14)
     k.cyl("water", 0, 0, 6.2, 2.6, 0.5, 14, collide=False)
     k.cyl("limestone", 0, 0, 6.6, 0.6, 2.4, 8)

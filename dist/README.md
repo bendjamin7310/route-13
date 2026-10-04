@@ -2,10 +2,10 @@
 
 | File | What it is | Size |
 |---|---|---|
-| **[PortSolace.rbxl](PortSolace.rbxl)** | The whole town as a Roblox place: every building with its interior, furniture, street props, cars, boats, trees, ~5,400 lights, signs, gameplay markers, the lighting preset, a spawn point and the runtime scripts. | ~8 MB |
-| **[PortSolace_Lite.rbxl](PortSolace_Lite.rbxl)** | The same place, but only landmarks and the downtown/civic core have interiors (~210k parts instead of ~365k). Start here on an average PC. | ~5 MB |
-| **[PortSolace_Town.rbxm](PortSolace_Town.rbxm)** | The town as a model, for inserting into a place you already have. | ~8 MB |
-| [PortSolace_Test.rbxl](PortSolace_Test.rbxl) | Just the downtown block (about 36k instances), with every kind of object the big file has. If the big file won't open, try this one to narrow down why. | ~1 MB |
+| **[PortSolace.rbxl](PortSolace.rbxl)** | The whole town as a Roblox place: every building with its interior, furniture, street props, cars, boats, trees, ~5,500 lights, signs, gameplay markers, the lighting preset, a spawn point and the runtime scripts. | ~9 MB |
+| **[PortSolace_Lite.rbxl](PortSolace_Lite.rbxl)** | The same place, but only landmarks and the downtown/civic core have interiors (~213k parts instead of ~372k). The other buildings are shells with a ground floor; their upper-floor outside doors are locked. Start here on an average PC. | ~7 MB |
+| **[PortSolace_Town.rbxm](PortSolace_Town.rbxm)** | The town as a model, for inserting into a place you already have. | ~9 MB |
+| [PortSolace_Test.rbxl](PortSolace_Test.rbxl) | Just the downtown block plus the preview ground (about 87k instances), with every kind of object the big file has. If the big file won't open, try this one to narrow down why. | ~3 MB |
 
 ## FBX (Roblox 3D Importer, Blender, other engines)
 
@@ -70,8 +70,8 @@ generator. Instead, a script builds it from data that ships inside the file:
 
 ## What works when you press Play
 
-* **Doors.** Doors open with **E**. Hinged doors swing away from you, garage and roll-up
-  doors fold up, and sliding and double doors slide. Locked doors (cells, the evidence
+* **Doors.** Doors open with **E**. Hinged and double doors swing away from you, garage and
+  roll-up doors fold up, and sliding doors slide. Locked doors (cells, the evidence
   room and so on) stay shut until you set their `locked` attribute to false.
 * **Day and night.** The clock runs one in-game day per 24 real minutes, starting at
   sunset. Street lights come on at dusk, homes light up one by one, shops close, bars and
@@ -90,7 +90,7 @@ generator. Instead, a script builds it from data that ships inside the file:
 
 ## Performance
 
-The full place is about **365k parts**, so plan for a decent PC. The place has
+The full place is about **370k parts**, so plan for a decent PC. The place has
 StreamingEnabled on, which helps players in a live game but not Studio's edit mode. If Studio
 struggles:
 

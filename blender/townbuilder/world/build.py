@@ -54,6 +54,9 @@ def build_world(seed=7, density=1.0, veg_density=1.0, max_buildings=None, log_fn
     net = RoadNetwork(T)
     W.net = net
     log_fn(f"roads: {len(net.roads)} roads, {len(net.junctions)} junctions")
+    for msg in net.issues:
+        log_fn(f"road layout issue: {msg}")
+        W.issues.append(msg)
     rail = RailLine(Lay.RAIL, T, net)
     W.rail = rail
     placer = Placer(net, T, seed=seed + 6, density=density)

@@ -198,9 +198,11 @@ class Terrain:
         h = az + t * (bz - az)
         self._apply(i0, i1, j0, j1, d, h, core, blend, paint)
 
-    def cap_segment(self, ax, ay, az, bx, by, bz, core, slope):
+    def cap_segment(self, ax, ay, az, bx, by, bz, core, slope, ext_a=True, ext_b=True):
         """After finalize: lower the surface to at most the segment height within ``core``,
-        rising ``slope`` per stud outside it (cuts banks under bridge decks)."""
+        rising ``slope`` per stud outside it (cuts banks under bridge decks).  With
+        ``ext_a``/``ext_b`` False nothing is cut beyond that end of the segment (the end of a
+        bridge run, where the approach road continues on the ground)."""
         r = core + 60.0
         i0, i1, j0, j1 = self._region(min(ax, bx) - r, min(ay, by) - r, max(ax, bx) + r,
                                       max(ay, by) + r)
@@ -210,11 +212,39 @@ class Terrain:
         Y = self.Y[i0:i1, j0:j1]
         dx, dy = bx - ax, by - ay
         l2 = dx * dx + dy * dy
+        raw = np.zeros(X.shape) if l2 < 1e-9 else ((X - ax) * dx + (Y - ay) * dy) / l2
+        t = np.clip(raw, 0, 1)
+        d = np.hypot(X - (ax + t * dx), Y - (ay + t * dy))
+        cap = az + t * (bz - az) + np.maximum(d - core, 0.0) * slope
+        if not ext_a:
+            cap = np.where(raw < 0, np.inf, cap)
+        if not ext_b:
+            cap = np.where(raw > 1, np.inf, cap)
+        self.H[i0:i1, j0:j1] = np.minimum(self.H[i0:i1, j0:j1], cap)
+
+    def floor_segment(self, ref, ax, ay, az, bx, by, bz, core):
+        """Raise the surface back to at most ``ref`` (the pre-cap grid) but no higher than the
+        segment height within ``core`` (keeps ground roads on their stamped bed)."""
+        i0, i1, j0, j1 = self._region(min(ax, bx) - core, min(ay, by) - core,
+                                      max(ax, bx) + core, max(ay, by) + core)
+        if i0 >= i1 or j0 >= j1:
+            return
+        X = self.X[i0:i1, j0:j1]
+        Y = self.Y[i0:i1, j0:j1]
+        dx, dy = bx - ax, by - ay
+        l2 = dx * dx + dy * dy
         t = np.zeros(X.shape) if l2 < 1e-9 else \
             np.clip(((X - ax) * dx + (Y - ay) * dy) / l2, 0, 1)
         d = np.hypot(X - (ax + t * dx), Y - (ay + t * dy))
-        cap = az + t * (bz - az) + np.maximum(d - core, 0.0) * slope
-        self.H[i0:i1, j0:j1] = np.minimum(self.H[i0:i1, j0:j1], cap)
+        keep = np.minimum(ref[i0:i1, j0:j1], az + t * (bz - az))
+        H = self.H[i0:i1, j0:j1]
+        self.H[i0:i1, j0:j1] = np.where(d <= core, np.maximum(H, keep), H)
+
+    def repaint_slopes(self, changed):
+        """Recompute the rock-on-steep-slope rule where the grid was edited after finalize."""
+        slope = np.hypot(*np.gradient(self.H, RES))
+        m = changed & (slope > 0.65) & (self.paint < 0)
+        self.mat = np.where(m, MAT["rock"], self.mat)
 
     def stamp_rect(self, corners, z, margin, blend, paint=None):
         """Flatten an oriented rectangle (lot pad) plus margin, blending outside."""

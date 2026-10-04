@@ -30,7 +30,7 @@ from collections import defaultdict
 
 from .. import palette as pal
 from ..geom import (Prim, Xform, mat_mul, rot_z, rot_x, to_roblox_rot, to_roblox_pos,
-                    to_roblox_size)
+                    to_roblox_size, tri_wedge_prims, plane_box)
 from ..kit import KIT, load_all as _load_kit
 from ..world import layout as Lay
 from ..world.model import chunk_of, chunk_name
@@ -219,26 +219,50 @@ def _min_rect(poly):
 
 
 def patch_boxes(patch):
+    """Junction patch -> [(part Prim, carve base Prim or None)].  A flat fan is one box; a
+    fan on a slope is drawn triangle by triangle with wedges so it meets every arm at the
+    arm's height.  Corner sidewalks are pitched boxes following their height ramp."""
     cat, mat, verts, faces, c = patch[:5]
     info = patch[5] if len(patch) > 5 else None
     out = []
     if info and info["kind"] == "fan":
+        vs = info.get("verts")
         cx, cy, w, h, ang = _min_rect(info["poly"])
-        out.append(Prim("box", mat, (cx, cy, info["z"] - 0.5), (w, h, 1.0), rot_z(ang), True))
+        poly = info["poly"]
+        area = abs(sum(poly[i][0] * poly[i - 1][1] - poly[i - 1][0] * poly[i][1]
+                       for i in range(len(poly)))) / 2
+        flat = vs is None or max(abs(v[2] - info["z"]) for v in vs) < 0.2
+        if flat and (vs is None or area > 0.95 * w * h):
+            # a flat, nearly rectangular junction is one block; anything else is drawn
+            # triangle by triangle so the pad never overhangs the roads leaving it
+            p = Prim("box", mat, (cx, cy, info["z"] - 0.5), (w, h, 1.0), rot_z(ang), True)
+            out.append((p, p))
+        else:
+            for f in faces:
+                a, b, cc = vs[f[0]], vs[f[1]], vs[f[2]]
+                wedges = tri_wedge_prims(a, b, cc, 1.0, mat, True)
+                for k, wp in enumerate(wedges):
+                    out.append((wp, plane_box(a, b, cc, 1.0) if k == 0 else None))
     elif info and info["kind"] == "corner":
-        inner, outer, z = info["inner"], info["outer"], info["z"]
+        inner, outer = info["inner"], info["outer"]
+        zs = info.get("zs") or [info["z"]] * len(inner)
         for i in range(len(inner) - 1):
             pts = [inner[i], inner[i + 1], outer[i + 1], outer[i]]
             cx = sum(p[0] for p in pts) / 4
             cy = sum(p[1] for p in pts) / 4
             ma = ((inner[i][0] + outer[i][0]) / 2, (inner[i][1] + outer[i][1]) / 2)
             mb = ((inner[i + 1][0] + outer[i + 1][0]) / 2, (inner[i + 1][1] + outer[i + 1][1]) / 2)
-            L = math.hypot(mb[0] - ma[0], mb[1] - ma[1]) + 0.6
+            L = math.hypot(mb[0] - ma[0], mb[1] - ma[1])
             wd = (math.hypot(outer[i][0] - inner[i][0], outer[i][1] - inner[i][1]) +
                   math.hypot(outer[i + 1][0] - inner[i + 1][0],
                              outer[i + 1][1] - inner[i + 1][1])) / 2
             yaw = math.atan2(mb[1] - ma[1], mb[0] - ma[0])
-            out.append(Prim("box", mat, (cx, cy, z - 0.55), (L, wd, 2.1), rot_z(yaw), True))
+            dz = zs[i + 1] - zs[i]
+            pitch = math.atan2(dz, L) if L > 1e-3 else 0.0
+            z = (zs[i] + zs[i + 1]) / 2
+            p = Prim("box", mat, (cx, cy, z - 0.55), (wd, math.hypot(L, dz) + 0.6, 2.1),
+                     mat_mul(rot_z(yaw - math.pi / 2), rot_x(pitch)), True)
+            out.append((p, p))
     return out
 
 
@@ -362,12 +386,13 @@ def export_roblox(W, out, log=print):
     for patch in W.patches:
         cd = ch(*patch[4])
         cd.parts.append(f"#Infrastructure|{patch[0].title()}")
-        for p in patch_boxes(patch):
+        for (p, base) in patch_boxes(patch):
             cd.parts.append(part_line(p))
             cd.colliders.append(box_line(p))
-            top = p.pos[2] + p.size[2] / 2
-            clear = max(10.0, W.terrain.h(p.pos[0], p.pos[1]) - top + 2.0)
-            cd.carve.append(box_line(carve_above(p, clear)))
+            if base is not None:
+                top = base.pos[2] + base.size[2] / 2
+                clear = max(10.0, W.terrain.h(base.pos[0], base.pos[1]) - top + 2.0)
+                cd.carve.append(box_line(carve_above(base, clear)))
     for (cat, p) in W.boxes:
         cd = ch(p.pos[0], p.pos[1])
         cd.parts.append(f"#Infrastructure|{cat.title()}")

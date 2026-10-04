@@ -24,6 +24,7 @@ import subprocess
 from .. import palette as pal
 from ..kit import KIT
 from ..world import layout as Lay
+from ..geom import tri_wedges
 from .export import KIT_NAMES, PAL_NAMES, PAL_INDEX, part_line, REPO_ROBLOX
 
 BLOCK_RE = re.compile(r"\t(\w+) = \[(=+)\[\n(.*?)\n\]\2\]", re.S)
@@ -179,46 +180,6 @@ class TerrainGrid:
             (H[i0 + 1][j0] * (1 - tj) + H[i0 + 1][j0 + 1] * tj) * ti
 
 
-def tri_wedges(a, b, c, t):
-    """Triangle a, b, c (Roblox space) as two WedgeParts of thickness t whose upper faces lie
-    in the triangle plane.  Returns [(pos, rot row-major, size)]."""
-    def sub(u, v):
-        return (u[0] - v[0], u[1] - v[1], u[2] - v[2])
-
-    def dot(u, v):
-        return u[0] * v[0] + u[1] * v[1] + u[2] * v[2]
-
-    def cross(u, v):
-        return (u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0])
-
-    def unit(u):
-        n = math.sqrt(dot(u, u)) or 1.0
-        return (u[0] / n, u[1] / n, u[2] / n)
-    ab, ac, bc = sub(b, a), sub(c, a), sub(c, b)
-    abd, acd, bcd = dot(ab, ab), dot(ac, ac), dot(bc, bc)
-    if abd > acd and abd > bcd:
-        a, c = c, a
-    elif acd > bcd and acd > abd:
-        a, b = b, a
-    ab, ac, bc = sub(b, a), sub(c, a), sub(c, b)
-    right = unit(cross(ac, ab))
-    up = unit(cross(bc, right))
-    back = unit(bc)
-    h = abs(dot(ab, up))
-    nup = right if right[1] > 0 else (-right[0], -right[1], -right[2])
-    sh = (-nup[0] * t / 2, -nup[1] * t / 2, -nup[2] * t / 2)
-    out = []
-    for (m, r, bk, depth) in (((a, b), right, back, abs(dot(ab, back))),
-                              ((a, c), (-right[0], -right[1], -right[2]),
-                               (-back[0], -back[1], -back[2]), abs(dot(ac, back)))):
-        pos = ((m[0][0] + m[1][0]) / 2 + sh[0], (m[0][1] + m[1][1]) / 2 + sh[1],
-               (m[0][2] + m[1][2]) / 2 + sh[2])
-        rot = (r[0], up[0], bk[0], r[1], up[1], bk[1], r[2], up[2], bk[2])
-        if h > 1e-3 and depth > 1e-3:
-            out.append((pos, rot, (t, h, depth)))
-    return out
-
-
 # ---------------------------------------------------------------------------------------
 
 class Writer:
@@ -333,21 +294,36 @@ class PlaceBuilder:
 
     def parts_block(self, chunk, block):
         parent, sub, owner = None, None, None
-        skip = False
+        skip, pending, ground = False, None, 0.0
         for line in block.split("\n"):
             if not line:
                 continue
             if line[0] == "#":
+                m = re.match(r"^#(B\d+)\|Interior$", line)
+                if m and not self.interior_wanted(m.group(1)):
+                    # no interior: keep only the ground-floor slabs so the entrances lead
+                    # onto a floor; the Interior model is created only if one is kept
+                    skip, pending, parent, owner = True, line, None, m.group(1)
+                    ground = self.ground_level(owner)
+                    continue
+                skip, pending = False, None
                 parent, sub, owner = self.group(chunk, line)
-                skip = sub == "Interior" and not self.interior_wanted(owner)
-                continue
-            if skip:
                 continue
             f = line.split(",")
             pos = (float(f[1]), float(f[2]), float(f[3]))
             rot = q2m(float(f[4]), float(f[5]), float(f[6]), float(f[7]))
             size = (float(f[8]), float(f[9]), float(f[10]))
+            if skip:
+                if not (f[0] == "B" and abs(rot[4]) > 0.99 and size[1] <= 2.0 and
+                        size[0] * size[2] >= 4.0 and abs(pos[1] + size[1] / 2 - ground) < 0.7):
+                    continue
+                if parent is None:
+                    parent, sub, owner = self.group(chunk, pending)
             self.emit_part(parent, f[0], pos, rot, size, int(f[11]), f[12] == "1")
+
+    def ground_level(self, owner):
+        info = self.buildings.get(owner)
+        return info["center"][2] if info else 0.0
 
     def interior_wanted(self, owner):
         if not self.interiors:
@@ -396,6 +372,9 @@ class PlaceBuilder:
             if interior:
                 attrs["Interior"] = True
             tags = sorted({PROP_TAGS[t] for t in d.tags if t in PROP_TAGS})
+            if "door" in meta and not interior and owner and not self.interior_wanted(owner) \
+                    and ppos[1] > self.ground_level(owner) + 2.0:
+                attrs["locked"] = True          # upper-floor door of a building without interior
             if "door" in meta:
                 kind = "hinged"
                 for t in d.tags:
@@ -518,83 +497,217 @@ class PlaceBuilder:
             self.stats["signs"] += 1
 
     # -- preview ground ------------------------------------------------------------------------
-    def preview_ground(self, grid: TerrainGrid, cell=32.0, thickness=1.2):
-        """Coarse part-based ground + water so the town is not floating in edit mode before
-        the voxel terrain is baked (buildTerrain() removes this folder)."""
+    def preview_ground(self, grid: TerrainGrid, carve="", cell=32.0, fine=16.0, thickness=1.2,
+                       tol=0.8, clearance=0.35):
+        """Part-based ground + water so the town is not floating in edit mode before the voxel
+        terrain is generated (buildTerrain() removes this folder).
+
+        A triangulated surface on a 32-stud lattice, refined to 16 studs where the terrain is
+        not flat enough.  Vertices start on the terrain and are lowered until no 4-stud
+        sample of any triangle rises above the terrain or above the bottom of a carve volume
+        (roads, sidewalks and building floors) minus ``clearance``.  Edge midpoints shared
+        with a coarse cell stay on the coarse edge, so the surface has no cracks."""
+        import numpy as np
         root = self.folder(self.root, "PreviewGround")
         land = self.folder(root, "Land", "Model")
         water = self.folder(root, "Water", "Model")
-        half = -grid.origin
-        n = int(2 * half / cell)
-        step = int(cell / grid.res)
-        win = step // 2
+        res, N, org = grid.res, grid.N, grid.origin
+        H = np.array(grid.H, dtype=float)                 # [row i (Blender y), col j (X)]
+        M = np.array(grid.M, dtype=np.int32)
+        Wl = np.array([[np.nan if v is None else v for v in row] for row in grid.W])
+        lim = H - clearance
+        # carve volumes: the preview stays under their bottom face
+        gx = org + np.arange(N) * res                     # X of column j
+        gz = -(org + np.arange(N) * res)                  # Roblox Z of row i
+        for line in carve.split("\n"):
+            f = line.split(",")
+            if len(f) < 11:
+                continue
+            c = np.array([float(f[1]), float(f[2]), float(f[3])])
+            R = q2m(float(f[4]), float(f[5]), float(f[6]), float(f[7]))
+            sx, sy, sz = float(f[8]), float(f[9]), float(f[10])
+            ax = np.array([R[0], R[3], R[6]])
+            up = np.array([R[1], R[4], R[7]])
+            bk = np.array([R[2], R[5], R[8]])
+            if up[1] < 0.5:
+                continue
+            ext_x = abs(ax[0]) * sx / 2 + abs(up[0]) * sy / 2 + abs(bk[0]) * sz / 2
+            ext_z = abs(ax[2]) * sx / 2 + abs(up[2]) * sy / 2 + abs(bk[2]) * sz / 2
+            j0 = max(0, int(np.floor((c[0] - ext_x - org) / res)))
+            j1 = min(N - 1, int(np.ceil((c[0] + ext_x - org) / res)))
+            i0 = max(0, int(np.floor((-(c[2] + ext_z) - org) / res)))
+            i1 = min(N - 1, int(np.ceil((-(c[2] - ext_z) - org) / res)))
+            if i0 > i1 or j0 > j1:
+                continue
+            X, Z = np.meshgrid(gx[j0:j1 + 1], gz[i0:i1 + 1])
+            b = c - up * sy / 2                            # bottom face centre
+            # bottom plane height at each sample, then inside-footprint test in the plane
+            yb = b[1] - (up[0] * (X - b[0]) + up[2] * (Z - b[2])) / up[1]
+            d = np.stack([X - b[0], yb - b[1], Z - b[2]])
+            u = ax[0] * d[0] + ax[1] * d[1] + ax[2] * d[2]
+            v = bk[0] * d[0] + bk[1] * d[1] + bk[2] * d[2]
+            inside = (np.abs(u) <= sx / 2 + res / 2) & (np.abs(v) <= sz / 2 + res / 2)
+            sub = lim[i0:i1 + 1, j0:j1 + 1]
+            lim[i0:i1 + 1, j0:j1 + 1] = np.where(inside, np.minimum(sub, yb - clearance), sub)
+        n = int(round((N - 1) * res / fine))              # fine cells per side
+        fs = int(round(fine / res))                       # samples per fine cell
+        nv = n + 1
+        # vertex grid V[a, b]: a -> X (column), b -> row; starts on the limit surface
+        V = lim[::fs, ::fs].T.copy()
+        # coarse cells: 2 triangles if the fine vertices are within tol of that plane
+        nc = n // 2
+        coarse = np.zeros((nc, nc), dtype=bool)
+        for A in range(nc):
+            for B in range(nc):
+                a, b = 2 * A, 2 * B
+                c00, c10, c11, c01 = V[a, b], V[a + 2, b], V[a + 2, b + 2], V[a, b + 2]
+                # triangles (00,10,11) and (00,11,01): plane values at the 5 inner vertices
+                est = {(1, 0): (c00 + c10) / 2, (2, 1): (c10 + c11) / 2,
+                       (1, 2): (c11 + c01) / 2, (0, 1): (c00 + c01) / 2,
+                       (1, 1): (c00 + c11) / 2}
+                coarse[A, B] = all(abs(V[a + da, b + db] - e) <= tol
+                                   for (da, db), e in est.items())
+        # constrained midpoints (on an edge of a coarse cell): (vertex, parent1, parent2)
+        cons = {}
+        for A in range(nc):
+            for B in range(nc):
+                if not coarse[A, B]:
+                    continue
+                a, b = 2 * A, 2 * B
+                for (m, p1, p2) in (((a + 1, b), (a, b), (a + 2, b)),
+                                    ((a + 2, b + 1), (a + 2, b), (a + 2, b + 2)),
+                                    ((a + 1, b + 2), (a, b + 2), (a + 2, b + 2)),
+                                    ((a, b + 1), (a, b), (a, b + 2))):
+                    cons[m] = (p1, p2)
+        # triangles as vertex index triples (a, b) and the sample window of their cell
+        tris = []                                          # (v0, v1, v2, cellA, cellB)
+        for A in range(nc):
+            for B in range(nc):
+                a, b = 2 * A, 2 * B
+                if coarse[A, B]:
+                    q = [(a, b), (a + 2, b), (a + 2, b + 2), (a, b + 2)]
+                    tris.append((q[0], q[1], q[2], A, B))
+                    tris.append((q[0], q[2], q[3], A, B))
+                else:
+                    for da in (0, 1):
+                        for db in (0, 1):
+                            q = [(a + da, b + db), (a + da + 1, b + db),
+                                 (a + da + 1, b + db + 1), (a + da, b + db + 1)]
+                            tris.append((q[0], q[1], q[2], A, B))
+                            tris.append((q[0], q[2], q[3], A, B))
+        # samples -> containing triangle + barycentric weights (in grid index space)
+        T = len(tris)
+        flat = lambda v: v[0] * nv + v[1]
+        sid, sv, ss, sw = [], [], [], []
+        for t, (p0, p1, p2, A, B) in enumerate(tris):
+            # vertex positions in sample units: column j = a * fs, row i = b * fs
+            P = np.array([[p[0] * fs, p[1] * fs] for p in (p0, p1, p2)], dtype=float)
+            jlo, jhi = int(P[:, 0].min()), int(P[:, 0].max())
+            ilo, ihi = int(P[:, 1].min()), int(P[:, 1].max())
+            J, I = np.meshgrid(np.arange(jlo, jhi + 1), np.arange(ilo, ihi + 1))
+            J, I = J.ravel(), I.ravel()
+            (x0, y0), (x1, y1), (x2, y2) = P
+            den = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
+            w0 = ((y1 - y2) * (J - x2) + (x2 - x1) * (I - y2)) / den
+            w1 = ((y2 - y0) * (J - x2) + (x0 - x2) * (I - y2)) / den
+            w2 = 1 - w0 - w1
+            ok = (w0 >= -1e-9) & (w1 >= -1e-9) & (w2 >= -1e-9)
+            k = int(ok.sum())
+            sid.append(np.full(k, t))
+            ss.append(I[ok] * N + J[ok])
+            sv.append(np.tile([flat(p0), flat(p1), flat(p2)], (k, 1)))
+            sw.append(np.stack([w0[ok], w1[ok], w2[ok]], 1))
+        tri_of = np.concatenate(sid)
+        samp = np.concatenate(ss)
+        verts = np.concatenate(sv)
+        W3 = np.concatenate(sw)
+        limf = lim.ravel()[samp]
+        tri_v = np.array([[flat(p0), flat(p1), flat(p2)] for (p0, p1, p2, _, _) in tris])
+        Vf = V.ravel()
+        cm = np.array([flat(m) for m in cons], dtype=int)
+        cp1 = np.array([flat(p[0]) for p in cons.values()], dtype=int)
+        cp2 = np.array([flat(p[1]) for p in cons.values()], dtype=int)
+        if len(cm):
+            Vf[cm] = (Vf[cp1] + Vf[cp2]) / 2
+        for _ in range(40):
+            plane = (Vf[verts] * W3).sum(1)
+            viol = plane - limf
+            tv = np.full(T, 0.0)
+            np.maximum.at(tv, tri_of, viol)
+            if tv.max() <= 0.01:
+                break
+            low = np.zeros(len(Vf))
+            np.maximum.at(low, tri_v.ravel(), np.repeat(tv, 3))
+            Vf -= low
+            if len(cm):
+                # a lowered midpoint drags its coarse edge down with it
+                need = np.maximum((Vf[cp1] + Vf[cp2]) / 2 - Vf[cm], 0.0)
+                d1 = np.zeros(len(Vf))
+                np.maximum.at(d1, cp1, need)
+                np.maximum.at(d1, cp2, need)
+                Vf -= d1
+                Vf[cm] = (Vf[cp1] + Vf[cp2]) / 2
+        V = Vf.reshape(nv, nv)
+        final = (Vf[verts] * W3).sum(1) - limf
+        self.stats["preview_max_violation"] = round(float(final.max()), 3)
+        # water: one part per wet coarse cell (as before)
+        cs = 2 * fs
         names = grid.mat_names
-        # vertex heights: lowest 4-stud sample around each vertex, a little below the surface,
-        # so the preview never pokes through roads, floors or the real terrain
-        V = [[0.0] * (n + 1) for _ in range(n + 1)]
-        for a in range(n + 1):
-            for b in range(n + 1):
-                gi, gj = b * step, a * step       # a -> X, b -> row (Blender y)
-                lo = 1e9
-                for i in range(max(0, gi - win), min(grid.N, gi + win + 1), 2):
-                    row = grid.H[i]
-                    for j in range(max(0, gj - win), min(grid.N, gj + win + 1), 2):
-                        lo = min(lo, row[j])
-                V[a][b] = lo - 0.6
+        cell_lvl = {}
+        for A in range(nc):
+            for B in range(nc):
+                i0, j0 = B * cs, A * cs
+                wl = Wl[i0:i0 + cs:2, j0:j0 + cs:2]
+                wet = np.isfinite(wl)
+                if not wet.any():
+                    continue
+                lvl = float(np.nanmax(wl))
+                if np.all(np.abs(wl[wet]) < 0.01):
+                    lvl = 0.0
+                cell_lvl[(A, B)] = lvl
+                if wet.sum() * 4 >= wl.size:
+                    x0 = org + A * cell
+                    z0 = -(org + B * cell)
+                    self.w.add(water, "Part", {
+                        "Name": "Water", "Anchored": True, "CanCollide": False,
+                        "CanTouch": False, "CanQuery": False, "CastShadow": False,
+                        "Size": [cell, 1.0, cell],
+                        "CFrame": cf((x0 + cell / 2, lvl - 0.55, z0 - cell / 2)),
+                        "Material": "SmoothPlastic", "Color": [52 / 255, 102 / 255, 118 / 255],
+                        "Transparency": 0.3, "TopSurface": "Smooth",
+                        "BottomSurface": "Smooth"})
         wedges = 0
-        for a in range(n):
-            for b in range(n):
-                gi0, gj0 = b * step, a * step
-                cnt = {}
-                wet = sea = 0
-                wl = []
-                for i in range(gi0, min(grid.N, gi0 + step), 2):
-                    for j in range(gj0, min(grid.N, gj0 + step), 2):
-                        m = grid.M[i][j]
-                        cnt[m] = cnt.get(m, 0) + 1
-                        w = grid.W[i][j]
-                        if w is not None:
-                            wet += 1
-                            wl.append(w)
-                            if abs(w) < 0.01:
-                                sea += 1
-                total = sum(cnt.values())
-                x0 = grid.origin + a * cell
-                x1 = x0 + cell
-                # Blender y rows -> Roblox z = -y
-                z0 = -(grid.origin + b * cell)
-                z1 = -(grid.origin + (b + 1) * cell)
-                corners = [(x0, V[a][b], z0), (x1, V[a + 1][b], z0),
-                           (x1, V[a + 1][b + 1], z1), (x0, V[a][b + 1], z1)]
-                if wet:
-                    lvl = max(wl)
-                    if sea == wet:
-                        lvl = 0.0
-                    if wet * 4 >= total:
-                        self.w.add(water, "Part", {
-                            "Name": "Water", "Anchored": True, "CanCollide": False,
-                            "CanTouch": False, "CanQuery": False, "CastShadow": False,
-                            "Size": [cell, 1.0, cell],
-                            "CFrame": cf(((x0 + x1) / 2, lvl - 0.55, (z0 + z1) / 2)),
-                            "Material": "SmoothPlastic", "Color": [52 / 255, 102 / 255, 118 / 255],
-                            "Transparency": 0.3, "TopSurface": "Smooth",
-                            "BottomSurface": "Smooth"})
-                    if all(c[1] < lvl - 3.0 for c in corners):
-                        continue                  # fully under water: the floor is not needed
-                mid = max(cnt, key=cnt.get)
-                pal_name = names[mid] if mid < len(names) else "grass"
-                e = pal.P.get(pal_name, pal.P["grass"])
-                color = [c / 255.0 for c in e["rgb"]]
-                for tri in ((corners[0], corners[1], corners[2]),
-                            (corners[0], corners[2], corners[3])):
-                    for (pos, rot, size) in tri_wedges(*tri, thickness):
-                        self.w.add(land, "WedgePart", {
-                            "Anchored": True, "CanTouch": False, "CastShadow": False,
-                            "Size": [round(v, 4) for v in size], "CFrame": cf(pos, rot),
-                            "Material": e["rbx"], "Color": color,
-                            "TopSurface": "Smooth", "BottomSurface": "Smooth"})
-                        wedges += 1
+        mat_cache = {}
+
+        def material(a, b):
+            # majority terrain material of the fine cell at vertex (a, b)
+            key = (a, b)
+            if key not in mat_cache:
+                blk = M[b * fs:(b + 1) * fs, a * fs:(a + 1) * fs].ravel()
+                mid = int(np.bincount(blk).argmax()) if blk.size else 0
+                nm = names[mid] if mid < len(names) else "grass"
+                e = pal.P.get(nm, pal.P["grass"])
+                mat_cache[key] = (e["rbx"], [c / 255.0 for c in e["rgb"]])
+            return mat_cache[key]
+
+        for (p0, p1, p2, A, B) in tris:
+            pts = [(org + p[0] * fine, float(V[p[0], p[1]]), -(org + p[1] * fine))
+                   for p in (p0, p1, p2)]
+            lvl = cell_lvl.get((A, B))
+            if lvl is not None and all(pt[1] < lvl - 3.0 for pt in pts):
+                continue                      # fully under water: the floor is not needed
+            ma = min(p[0] for p in (p0, p1, p2))
+            mb = min(p[1] for p in (p0, p1, p2))
+            rbx, color = material(min(ma, n - 1), min(mb, n - 1))
+            for (pos, rot, size) in tri_wedges(*pts, thickness):
+                self.w.add(land, "WedgePart", {
+                    "Anchored": True, "CanTouch": False, "CastShadow": False,
+                    "Size": [round(v, 4) for v in size], "CFrame": cf(pos, rot),
+                    "Material": rbx, "Color": color,
+                    "TopSurface": "Smooth", "BottomSurface": "Smooth"})
+                wedges += 1
         self.stats["preview_wedges"] = wedges
+        self.stats["preview_fine_cells"] = int((~coarse).sum())
 
     def spawn_spot(self, grid: TerrainGrid):
         """A clear 12x12 spot on the Town Square lawn (first ring around the marker)."""
@@ -734,7 +847,7 @@ def write_instances(data_dir, manifest_path, out_jsonl, mode="place", interiors=
     pb = PlaceBuilder(data_dir, manifest, w, interiors=interiors, prop_detail=prop_detail)
     carve = pb.build_town(ws, chunks)
     if preview:
-        pb.preview_ground(grid)
+        pb.preview_ground(grid, carve)
     # spawn on a clear spot of the town square (it has ground even before the terrain)
     x, y, z = pb.spawn_spot(grid)
     pb.stats["spawn"] = (round(x, 1), round(y, 1), round(z, 1))
@@ -792,7 +905,8 @@ def build_place(data_dir, manifest_path, out_path, mode="place", log=print, **kw
         log("place: cargo not found; instance list left at " + jsonl)
         return None
     subprocess.run([exe, mode, jsonl, out_path], check=True)
-    os.remove(jsonl)
+    if not os.environ.get("PS_KEEP_JSONL"):          # keep the instance list for audits
+        os.remove(jsonl)
     log(f"place: wrote {out_path} ({os.path.getsize(out_path) / 1e6:.1f} MB)")
     return out_path
 

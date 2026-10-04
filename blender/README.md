@@ -133,9 +133,9 @@ Useful options for `build{...}`:
 | `colliders`, `visualParts` | `false`, `true` | for Workflow B |
 | `streaming` | `true` | enables `StreamingEnabled` (target radius 768) |
 
-Everything included, the town is about 365k parts. About 175k are structural (shells,
-interiors, roads) and about 190k belong to the ~33k furniture and prop models. Without
-interiors it's about 150k parts. Use `interiorFilter` to keep interiors only where your
+Everything included, the town is about 370k parts. About 185k are structural (shells,
+interiors, roads) and about 190k belong to the ~34k furniture and prop models. Without
+interiors it's about 158k parts. Use `interiorFilter` to keep interiors only where your
 game needs them; landmark buildings and a downtown core are a common choice. Building
 the full town in Studio takes a few minutes; it yields regularly so Studio stays
 responsive.
@@ -165,8 +165,8 @@ Objects over 19k triangles are split automatically.
   * `late`: bars, diners and the motel office.
   * `work`: industry, some lit all night.
   * `always` and `dark`: always on and never on.
-* **Doors.** Every door gets a ProximityPrompt. Hinged doors swing away from the player.
-  Garage and roll-up doors lift, and double or sliding doors slide. A door whose
+* **Doors.** Every door gets a ProximityPrompt. Hinged and double doors swing away from
+  the player. Garage and roll-up doors lift, and sliding doors slide. A door whose
   `locked` attribute is true stays shut and records `LastLockedAttempt`, so your
   lock-picking or keys system can hook in.
 * **Lighthouse.** The beam rotates at night.
@@ -184,7 +184,7 @@ Objects over 19k triangles are split automatically.
 
 These marker kinds are placed in the town:
 
-* `entrance`: 863 entrances, with role main, secondary, service, loading, garage, staff,
+* `entrance`: 857 entrances, with role main, secondary, service, loading, garage, staff,
   vehicle and so on.
 * `stair`, `roof_access`, `fire_escape`, `ladder`
 * `safehouse`, `hideout`, `stash`: starter trailers, motel rooms, apartments, basements,

@@ -135,6 +135,8 @@ class Junction:
         self.arms = []
         self.signal = False
         self.corner_pts = []
+        self.fan = None        # (verts, faces) of the carriageway patch
+        self.corners = []      # (inner, outer, zs) sidewalk corners
 
     @property
     def key_road(self):
@@ -157,7 +159,9 @@ class RoadNetwork:
         self.issues = []
         self.find_junctions()
         self.profiles()
+        self._check_layout()
         self.mark_zones()
+        self.level_junctions()
         self.build_arms()
 
     # -- spatial hash of segments ------------------------------------------------------
@@ -355,6 +359,41 @@ class RoadNetwork:
                         lin = z0[u] + (z0[v] - z0[u]) * (k - u) / (v - u)
                         r.Z[k] = max(lin, floor[k])
 
+    def _check_layout(self):
+        """Flag junctions on a bridge span and roads that run alongside each other (both make
+        junction patches that cannot follow the roads)."""
+        for j in self.junctions:
+            on_bridge = [self.roads[k].name for k, s in j.members.items()
+                         if self.roads[k].bridge[self.roads[k].index_at(s)]]
+            if on_bridge and len(on_bridge) < len(j.members):
+                self.issues.append(f"junction at ({j.x:.0f},{j.y:.0f}) sits on the "
+                                   f"{', '.join(on_bridge)} bridge span")
+        for r in self.roads:
+            run = defaultdict(int)
+            flagged = set()
+            for i in range(0, len(r.P), 2):
+                x, y = r.P[i]
+                close = set()
+                for (oi, k) in self.near_segments(x, y, 40.0):
+                    o = self.roads[oi]
+                    if oi <= r.idx or oi in close:
+                        continue
+                    (ax, ay), (bx, by) = o.P[k], o.P[k + 1]
+                    L = math.hypot(bx - ax, by - ay) or 1.0
+                    tx, ty = r.Tg[i]
+                    par = abs((bx - ax) * tx + (by - ay) * ty) / L > 0.94
+                    if par and seg_point_dist(ax, ay, bx, by, x, y)[0] < r.half + o.half + 8.0:
+                        close.add(oi)
+                for oi in list(run):
+                    if oi not in close:
+                        run[oi] = 0
+                for oi in close:
+                    run[oi] += 1
+                    if run[oi] * STEP * 2 > 80.0 and oi not in flagged:
+                        flagged.add(oi)
+                        self.issues.append(f"{r.name} runs alongside {self.roads[oi].name} "
+                                           f"near ({x:.0f},{y:.0f})")
+
     def _cut_approach(self, r, fixed, start, step, grade):
         """Lower the approach outward from a bank at ``grade`` until it meets the profile;
         if a junction is reached first, blend linearly from the junction to the bank."""
@@ -380,14 +419,28 @@ class RoadNetwork:
         return False
 
     def clear_under_bridges(self, T, clearance=4.0):
-        """Cut terrain (after stamping) so nothing rises above or close under a bridge deck."""
+        """Cut terrain (after stamping) so nothing rises above or close under a bridge deck.
+        Nothing is cut beyond the ends of a bridge run, and ground roads nearby (approaches,
+        crossings) keep the bed they were stamped with."""
+        ref = T.H.copy()
         for r in self.roads:
-            for i in range(len(r.P) - 1):
+            n = len(r.P)
+            for i in range(n - 1):
                 if not (r.bridge[i] and r.bridge[i + 1]):
                     continue
                 (ax, ay), (bx, by) = r.P[i], r.P[i + 1]
+                first = i == 0 or not r.bridge[i - 1]
+                last = i + 2 >= n or not r.bridge[i + 2]
                 T.cap_segment(ax, ay, r.Z[i] - clearance, bx, by, r.Z[i + 1] - clearance,
-                              r.half + 3.0, 1.0)
+                              r.half + 3.0, 1.0, ext_a=not first, ext_b=not last)
+        for r in self.roads:
+            core = r.half + r.sw + 1.0
+            for i in range(len(r.P) - 1):
+                if r.bridge[i] or r.bridge[i + 1]:
+                    continue
+                (ax, ay), (bx, by) = r.P[i], r.P[i + 1]
+                T.floor_segment(ref, ax, ay, r.Z[i] - 0.25, bx, by, r.Z[i + 1] - 0.25, core)
+        T.repaint_slopes(T.H < ref - 0.05)
 
     # -- zones & arms ------------------------------------------------------------------
     def mark_zones(self):
@@ -417,6 +470,50 @@ class RoadNetwork:
                 for i in range(lo, hi + 1):
                     r.zone[i] = True
                 j.zone_ranges[ri] = (lo, hi)
+
+    def level_junctions(self, extra=0.06, min_len=30.0):
+        """Level every junction zone at the junction height: arms of roads that meet at a
+        shallow angle stay side by side for a long way and must agree there.  Outside the
+        zone the correction fades out linearly, adding at most ``extra`` to the grade.
+        Zones on a bridge keep their deck heights."""
+        for r in self.roads:
+            n = len(r.P)
+            zones = []
+            for j in self.junctions:
+                if r.idx in j.zone_ranges:
+                    lo, hi = j.zone_ranges[r.idx]
+                    if not any(r.bridge[lo:hi + 1]):
+                        zones.append((lo, hi, j.z))
+            if not zones:
+                continue
+            orig = list(r.Z)
+            fixed = [False] * n
+            for lo, hi, zj in zones:
+                for i in range(lo, hi + 1):
+                    fixed[i] = True
+            z = list(orig)
+            for lo, hi, zj in zones:
+                for i in range(lo, hi + 1):
+                    z[i] = zj
+            for lo, hi, zj in zones:
+                for edge, step in ((lo, -1), (hi, 1)):
+                    c = zj - orig[edge]
+                    if abs(c) < 1e-3:
+                        continue
+                    D = max(min_len, abs(c) / extra)
+                    k = edge + step                       # stop short of a bridge or zone
+                    while 0 <= k < n and not fixed[k] and not r.bridge[k]:
+                        k += step
+                    if 0 <= k < n:
+                        D = min(D, abs(r.S[k] - r.S[edge]))
+                    i = edge + step
+                    while 0 <= i < n and not fixed[i] and not r.bridge[i]:
+                        dd = abs(r.S[i] - r.S[edge])
+                        if dd >= D:
+                            break
+                        z[i] += c * (1 - dd / D)
+                        i += step
+            r.Z = z
 
     def build_arms(self):
         for j in self.junctions:
@@ -542,6 +639,51 @@ class RoadGeometry:
             out.append((x, y, r.Z[i] + zoff, nx, ny))
         return out
 
+    def surface_z(self, x, y):
+        """Top of the walkable/drivable road surface at (x, y): carriageway, sidewalk,
+        bridge walkway, junction patch or corner sidewalk (the highest one that covers the
+        point), else the terrain."""
+        net = self.net
+        cands = []
+        best = {}
+        for (ri, i) in net.near_segments(x, y, 40.0):
+            r = net.roads[ri]
+            (ax, ay), (bx, by) = r.P[i], r.P[i + 1]
+            d, t = seg_point_dist(ax, ay, bx, by, x, y)
+            if ri not in best or d < best[ri][0]:
+                best[ri] = (d, i, t)
+        for ri, (d, i, t) in best.items():
+            r = net.roads[ri]
+            k = i if t < 0.5 else i + 1
+            z = r.Z[i] + (r.Z[i + 1] - r.Z[i]) * t
+            if r.zone[k]:
+                continue                    # the junction patches cover zones
+            if d <= r.half + 0.2:
+                cands.append(z)
+            elif r.bridge[k] and d <= r.half + max(r.sw, 4.0):
+                cands.append(z + CURB)
+            elif r.sw > 0 and not r.bridge[k] and d <= r.half + r.sw:
+                cands.append(z + CURB)
+        for j in net.junctions:
+            if abs(j.x - x) > 120 or abs(j.y - y) > 120:
+                continue
+            if j.fan:
+                verts, faces = j.fan
+                for f in faces:
+                    z = _tri_z(verts[f[0]], verts[f[1]], verts[f[2]], x, y)
+                    if z is not None:
+                        cands.append(z)
+                        break
+            for (inner, outer, zs) in j.corners:
+                for i in range(len(inner) - 1):
+                    for tri in ((inner[i], inner[i + 1], outer[i + 1]),
+                                (inner[i], outer[i + 1], outer[i])):
+                        z = _tri_z((*tri[0], 0.0), (*tri[1], 0.0), (*tri[2], 0.0), x, y)
+                        if z is not None:
+                            cands.append((zs[i] + zs[i + 1]) / 2 + CURB)
+                            break
+        return max(cands) if cands else net.T.h(x, y)
+
     # -- build ------------------------------------------------------------------------------
     def build(self):
         for r in self.net.roads:
@@ -550,11 +692,18 @@ class RoadGeometry:
             self._junction(j)
         self._furniture()
 
+    def _edge(self, r: Road, i, pred):
+        """pred(i), or i is the first sample past a run where pred holds: sweeps reach one
+        sample into a junction zone, to the arm end where the junction patch begins."""
+        return pred(i) or (i > 0 and pred(i - 1)) or (i + 1 < len(r.P) and pred(i + 1))
+
     def _road(self, r: Road):
         hw, sw = r.half, r.sw
         surf = r.surface
+        free = lambda i: not r.zone[i]
+        walk = lambda i: not r.zone[i] and not r.bridge[i]
         # carriageway outside junction zones (junction patches fill the zones)
-        for run in self.runs(r, lambda i: not r.zone[i]):
+        for run in self.runs(r, lambda i: self._edge(r, i, free)):
             self.sweeps.append(Sweep("ROADS", surf, self.samples(r, run),
                                      [(-hw, 0.0), (hw, 0.0)], name=r.name))
             # road shoulders down to the terrain where there is no sidewalk
@@ -567,7 +716,7 @@ class RoadGeometry:
                                              name=r.name + " shoulder", collide=False))
         # sidewalks + curbs (not on bridges: bridges get a walkway and parapet)
         if sw > 0:
-            for run in self.runs(r, lambda i: not r.zone[i] and not r.bridge[i]):
+            for run in self.runs(r, lambda i: not r.bridge[i] and self._edge(r, i, walk)):
                 smp = self.samples(r, run)
                 mat = "sidewalk" if self.district_at(*r.P[run[0]]) not in ("LOW_INCOME",
                                                                           "OUTSKIRTS") \
@@ -716,42 +865,79 @@ class RoadGeometry:
                 continue
             curve = _corner_curve(a.lc, a.theta + math.pi / 2, b.rc, b.theta - math.pi / 2,
                                   dth, (j.x, j.y))
-            for (x, y) in curve[1:-1]:
-                poly.append((x, y, (a.z + b.z) / 2))
+            m = len(curve) - 1
+            for k, (x, y) in enumerate(curve[1:-1], 1):
+                poly.append((x, y, a.z + (b.z - a.z) * k / m))     # follow both arm heights
             sw = min(a.road.sw, b.road.sw)
             if sw > 0 and dth < math.pi * 0.97:
                 outer = _corner_curve(a.lo, a.theta + math.pi / 2, b.ro, b.theta - math.pi / 2,
                                       dth, (j.x, j.y))
                 if len(outer) == len(curve):
-                    sidewalk_corners.append((curve, outer, (a.z + b.z) / 2, a, b))
+                    sidewalk_corners.append((curve, outer, (a.z, b.z), a, b))
+        poly = _untangle(poly)
         cx = sum(p[0] for p in poly) / len(poly)
         cy = sum(p[1] for p in poly) / len(poly)
-        verts = [(cx, cy, j.z)] + poly
-        faces = [(0, i + 1, (i + 1) % len(poly) + 1) for i in range(len(poly))]
+        # a fan around the junction point (which lies on every member road at its height);
+        # if the outline is not star-shaped around it (long Y junctions) the fan would fold
+        # over itself, so the outline is ear-clipped instead
+        sign = 1.0 if _signed_area([(p[0], p[1]) for p in poly]) > 0 else -1.0
+        m = len(poly)
+        fan_ok = all(sign * _tri_area((j.x, j.y), poly[i], poly[(i + 1) % m]) > 1e-6
+                     for i in range(m))
+        tris = None if fan_ok else _ear_clip([(p[0], p[1]) for p in poly])
+        if tris:
+            verts = list(poly)
+            faces = tris
+        else:
+            verts = [(j.x, j.y, j.z)] + poly
+            faces = [(0, i + 1, (i + 1) % m + 1) for i in range(m)]
         # winding: make the patch face up
-        if _signed_area([(p[0], p[1]) for p in poly]) < 0:
-            faces = [(f[0], f[2], f[1]) for f in faces]
-        mat = max((a.road for a in arms), key=lambda r: r.prio).surface
-        self.patches.append(("ROADS", mat, verts, faces, (cx, cy),
-                             {"kind": "fan", "z": j.z, "poly": [(p[0], p[1]) for p in poly]}))
-        for (inner, outer, z, a, b) in sidewalk_corners:
-            self._corner_sidewalk(inner, outer, z, a, b)
-        j.corner_pts = [((c[0][len(c[0]) // 2]), c[2]) for c in sidewalk_corners]
+        faces = [f if _tri_area(verts[f[0]], verts[f[1]], verts[f[2]]) > 0 else (f[0], f[2], f[1])
+                 for f in faces]
+        # on a slope, refine the patch so its inside follows the member roads (a blend of
+        # their profiles); otherwise it sags or bulges between the outline points and the
+        # terrain, stamped to the roads, shows through
+        if max(abs(v[2] - j.z) for v in verts) > 0.2:
+            members = [(self.net.roads[ri], self.net.roads[ri].index_at(st))
+                       for ri, st in j.members.items()]
 
-    def _corner_sidewalk(self, inner, outer, z, a, b):
-        """Rounded sidewalk corner with a curb face."""
+            def zfun(x, y):
+                ws = []
+                for (r, ih) in members:
+                    d, st, _ = r.nearest(x, y, ih, 25)
+                    ws.append((-4.0 * (d / r.half) ** 2, r.at(st)[2]))
+                top = max(w for w, _ in ws)
+                tw = sum(math.exp(w - top) for w, _ in ws)
+                return sum(math.exp(w - top) * z for w, z in ws) / tw
+            _refine_patch(verts, faces, zfun)
+        mat = max((a.road for a in arms), key=lambda r: r.prio).surface
+        j.fan = (verts, faces)
+        self.patches.append(("ROADS", mat, verts, faces, (cx, cy),
+                             {"kind": "fan", "z": j.z, "poly": [(p[0], p[1]) for p in poly],
+                              "verts": verts}))
+        j.corners = []
+        for (inner, outer, zz, a, b) in sidewalk_corners:
+            j.corners.append(self._corner_sidewalk(inner, outer, zz, a, b))
+        j.corner_pts = [((c[0][len(c[0]) // 2]), (c[2][0] + c[2][1]) / 2)
+                        for c in sidewalk_corners]
+
+    def _corner_sidewalk(self, inner, outer, zz, a, b):
+        """Rounded sidewalk corner with a curb face; its height runs from arm a's to arm b's
+        so it meets both sidewalks on a sloped junction."""
         mat = "sidewalk"
         verts = []
         faces = []
         m = len(inner)
-        for (x, y) in inner:
-            verts.append((x, y, z + CURB))
-        for (x, y) in outer:
-            verts.append((x, y, z + CURB))
-        for (x, y) in inner:
-            verts.append((x, y, z))
-        for (x, y) in outer:
-            verts.append((x, y, z - 1.6))
+        zs = [zz[0] + (zz[1] - zz[0]) * k / max(1, m - 1) for k in range(m)]
+        z = (zz[0] + zz[1]) / 2
+        for (x, y), zk in zip(inner, zs):
+            verts.append((x, y, zk + CURB))
+        for (x, y), zk in zip(outer, zs):
+            verts.append((x, y, zk + CURB))
+        for (x, y), zk in zip(inner, zs):
+            verts.append((x, y, zk))
+        for (x, y), zk in zip(outer, zs):
+            verts.append((x, y, zk - 1.6))
         for i in range(m - 1):
             faces.append((i, i + 1, m + i + 1, m + i))              # top
             faces.append((2 * m + i, 2 * m + i + 1, i + 1, i))      # curb face
@@ -760,8 +946,9 @@ class RoadGeometry:
             faces = [tuple(reversed(f)) for f in faces]
         cx, cy = inner[m // 2]
         self.patches.append(("SIDEWALKS", mat, verts, faces, (cx, cy),
-                             {"kind": "corner", "z": z, "inner": list(inner),
+                             {"kind": "corner", "z": z, "zs": zs, "inner": list(inner),
                               "outer": list(outer)}))
+        return (list(inner), list(outer), zs)
 
     # -- street furniture -------------------------------------------------------------------
     def _furniture(self):
@@ -972,7 +1159,7 @@ class RoadGeometry:
             nx, ny = -ty, tx
             off = r.half + max(r.sw, 2.0) * 0.6
             px, py = x - nx * off + tx * 2.0, y - ny * off + ty * 2.0
-            z = a.z + (CURB if r.sw > 0 else 0.0)
+            z = self.surface_z(px, py)
             yaw_face_in = math.atan2(-tx, ty)     # local -Y toward the junction
             if j.signal and r.prio >= 3:
                 # the mast arm (local -Y) reaches from the corner over the carriageway
@@ -984,7 +1171,8 @@ class RoadGeometry:
                 self.props.append(PropPlace("stop_sign", px, py, z, yaw_face_in + math.pi,
                                             interior=False))
             if not placed_sign and r.kind not in ("alley", "dirt") and len(names) >= 2:
-                self.props.append(PropPlace("street_sign", px + tx * 2.0, py + ty * 2.0, z,
+                self.props.append(PropPlace("street_sign", px + tx * 2.0, py + ty * 2.0,
+                                            self.surface_z(px + tx * 2.0, py + ty * 2.0),
                                             yaw_face_in, interior=False))
                 self.markers.append(Marker("street_sign", px, py, z, yaw_face_in,
                                            " / ".join(names)))
@@ -1037,6 +1225,153 @@ def _corner_curve(p0, d0_ang, p1, d1_ang, dth, center, n=7):
         y = (1 - t) ** 2 * ay + 2 * (1 - t) * t * cy + t * t * by
         pts.append((x, y))
     return pts
+
+
+def _tri_z(a, b, c, x, y):
+    """Height of the plane through a, b, c at (x, y) if the point is inside the triangle."""
+    d = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1])
+    if abs(d) < 1e-9:
+        return None
+    u = ((b[1] - c[1]) * (x - c[0]) + (c[0] - b[0]) * (y - c[1])) / d
+    v = ((c[1] - a[1]) * (x - c[0]) + (a[0] - c[0]) * (y - c[1])) / d
+    w = 1 - u - v
+    if min(u, v, w) < -1e-6:
+        return None
+    return u * a[2] + v * b[2] + w * c[2]
+
+
+def _tri_area(a, b, c):
+    return ((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1])) / 2
+
+
+def _refine_patch(verts, faces, zfun, tol=0.25, min_len=2.0, budget=400):
+    """Error-driven bisection of interior edges (conforming: both triangles of an edge are
+    split): new vertices take zfun's height, so the surface converges to zfun inside while
+    the outline (boundary edges) stays as it is.  Edits verts/faces in place."""
+    count = defaultdict(int)
+    for f in faces:
+        for e in ((f[0], f[1]), (f[1], f[2]), (f[2], f[0])):
+            count[(min(e), max(e))] += 1
+    boundary = {e for e, n in count.items() if n < 2}       # bisection never touches these
+    zc = {}
+
+    def z_at(x, y):
+        k = (round(x, 4), round(y, 4))
+        if k not in zc:
+            zc[k] = zfun(x, y)
+        return zc[k]
+    cache = {}
+
+    def score(f):
+        if f not in cache:
+            a, b, c = verts[f[0]], verts[f[1]], verts[f[2]]
+            err = abs(z_at((a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3) -
+                      (a[2] + b[2] + c[2]) / 3)
+            le = None
+            for e in ((f[0], f[1]), (f[1], f[2]), (f[2], f[0])):
+                key = (min(e), max(e))
+                if key in boundary:
+                    continue
+                p, q = verts[key[0]], verts[key[1]]
+                L = math.hypot(p[0] - q[0], p[1] - q[1])
+                if L >= min_len and (le is None or L > le[0]):
+                    le = (L, key)
+            if le is None:
+                cache[f] = (0.0, None)
+            else:
+                p, q = verts[le[1][0]], verts[le[1][1]]
+                em = abs(z_at((p[0] + q[0]) / 2, (p[1] + q[1]) / 2) - (p[2] + q[2]) / 2)
+                cache[f] = (max(err, em), le[1])
+        return cache[f]
+    for _ in range(budget):
+        best = max((score(f) for f in faces), key=lambda t: t[0], default=(0.0, None))
+        if best[0] <= tol or best[1] is None:
+            return
+        i0, i1 = best[1]
+        p, q = verts[i0], verts[i1]
+        mx, my = (p[0] + q[0]) / 2, (p[1] + q[1]) / 2
+        verts.append((mx, my, z_at(mx, my)))
+        m = len(verts) - 1
+        out = []
+        for f in faces:
+            if i0 in f and i1 in f:
+                k = f.index(i0)
+                g = f[k:] + f[:k]
+                if g[1] == i1:
+                    out += [(i0, m, g[2]), (m, i1, g[2])]
+                else:
+                    out += [(i0, g[1], m), (m, g[1], i1)]
+            else:
+                out.append(f)
+        faces[:] = out
+
+
+def _untangle(poly):
+    """Cut the small loops out of a self-intersecting outline (x, y, z): corner curves of arms
+    meeting at a shallow angle can cross each other."""
+    for _ in range(len(poly)):
+        m = len(poly)
+        hit = None
+        for a in range(m):
+            p1, p2 = poly[a], poly[(a + 1) % m]
+            for b in range(a + 2, m):
+                if a == 0 and b == m - 1:
+                    continue
+                p3, p4 = poly[b], poly[(b + 1) % m]
+                d = (p2[0] - p1[0]) * (p4[1] - p3[1]) - (p2[1] - p1[1]) * (p4[0] - p3[0])
+                if abs(d) < 1e-12:
+                    continue
+                t = ((p3[0] - p1[0]) * (p4[1] - p3[1]) - (p3[1] - p1[1]) * (p4[0] - p3[0])) / d
+                u = ((p3[0] - p1[0]) * (p2[1] - p1[1]) - (p3[1] - p1[1]) * (p2[0] - p1[0])) / d
+                if 1e-9 < t < 1 - 1e-9 and 1e-9 < u < 1 - 1e-9:
+                    hit = (a, b, t)
+                    break
+            if hit:
+                break
+        if not hit or m < 5:
+            return poly
+        a, b, t = hit
+        p1, p2 = poly[a], poly[(a + 1) % m]
+        x = (p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t,
+             p1[2] + (p2[2] - p1[2]) * t)
+        inner = poly[a + 1:b + 1]                     # the loop between the two crossings
+        outer = poly[b + 1:] + poly[:a + 1]
+        if abs(_signed_area([(q[0], q[1]) for q in inner + [x]])) < \
+                abs(_signed_area([(q[0], q[1]) for q in outer + [x]])):
+            poly = poly[:a + 1] + [x] + poly[b + 1:]
+        else:
+            poly = [x] + poly[a + 1:b + 1]
+    return poly
+
+
+def _ear_clip(poly):
+    """Triangulate a simple polygon (x, y) -> index triples, or None if it is not simple."""
+    n = len(poly)
+    if n < 3:
+        return None
+    sign = 1.0 if _signed_area(poly) > 0 else -1.0
+    idx = list(range(n))
+    out = []
+    guard = 0
+    while len(idx) > 3 and guard < n * n:
+        guard += 1
+        for k in range(len(idx)):
+            a, b, c = idx[k - 1], idx[k], idx[(k + 1) % len(idx)]
+            if sign * _tri_area(poly[a], poly[b], poly[c]) <= 1e-9:
+                continue                                    # reflex corner
+            if any(sign * _tri_area(poly[a], poly[b], poly[q]) >= -1e-9 and
+                   sign * _tri_area(poly[b], poly[c], poly[q]) >= -1e-9 and
+                   sign * _tri_area(poly[c], poly[a], poly[q]) >= -1e-9
+                   for q in idx if q not in (a, b, c)):
+                continue                                    # another vertex inside the ear
+            out.append((a, b, c))
+            idx.pop(k)
+            break
+        else:
+            return None                                     # no ear: not a simple polygon
+    if len(idx) == 3:
+        out.append(tuple(idx))
+    return out
 
 
 def _signed_area(poly):

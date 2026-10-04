@@ -154,8 +154,9 @@ function Builder.new(opts)
 	if not data:FindFirstChild("Kit") then
 		error(
 			"[PortSolace] this data folder has no Kit/Chunks modules: the town is already built "
-				.. "into this place. Use TownBuilder.buildTerrain() here, or insert PortSolace.rbxmx "
-				.. "into an empty place to build from scratch.",
+				.. "into this place. Use TownBuilder.buildTerrain() here. To build from scratch, make "
+				.. "PortSolace.rbxmx with 'python tools/make_roblox.py' (see blender/README.md) and "
+				.. "insert it into an empty place.",
 			2
 		)
 	end

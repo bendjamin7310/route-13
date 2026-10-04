@@ -5,8 +5,8 @@
 	  * day/night cycle (optional) starting in the late afternoon
 	  * light schedules: street lights at dusk, homes in the evening, shops during
 	    opening hours, bars and diners late, industry during shifts
-	  * openable doors (ProximityPrompt): hinged doors swing away from the player,
-	    garage / roll-up doors lift, double and sliding doors slide; locked doors stay
+	  * openable doors (ProximityPrompt): hinged and double doors swing away from the
+	    player, garage / roll-up doors lift, sliding doors slide; locked doors stay
 	    shut until something sets their "locked" attribute to false
 	  * rotating lighthouse beam at night
 
@@ -164,9 +164,10 @@ local function hingeTarget(model, closed, player)
 end
 
 -- Non-hinged doors move individual parts (door-local space: X across, Y up, Z depth):
---   double  - each leaf slides outward into the wall
+--   double  - each leaf swings on its outer jamb, away from the player
 --   sliding - the moving pane slides over the fixed one
 --   garage / rollup - the panel folds up into a band at the top of the opening
+-- Every move is a function of the open fraction a (0 closed .. 1 open).
 local FOLD = 0.12
 
 local function partMoves(model, closed, kind)
@@ -177,44 +178,49 @@ local function partMoves(model, closed, kind)
 		if p:IsA("BasePart") then
 			local lc = closed:ToObjectSpace(p.CFrame)
 			local lp = lc.Position
-			local openLocal, openSize = nil, p.Size
+			local m = { part = p, lc = lc, size = p.Size }
 			if kind == "double" then
-				local dir = lp.X < 0 and -1 or 1
-				openLocal = CFrame.new(dir * width * 0.48, 0, 0) * lc
+				-- left leaf hinges at -width/2, right leaf at +width/2
+				m.hinge = lp.X < 0 and -width / 2 or width / 2
+				table.insert(moves, m)
 			elseif kind == "sliding" then
 				if lp.X > 0 and lp.X < width * 0.45 then
-					openLocal = CFrame.new(-width * 0.45, 0, 0.14) * lc
+					m.openLocal = CFrame.new(-width * 0.45, 0, 0.14) * lc
+					m.openSize = p.Size
+					table.insert(moves, m)
 				end
 			else -- garage / rollup: fold everything below the housing into the top band
 				local bottom = lp.Y - p.Size.Y / 2
 				if bottom < height * 0.9 then
 					local y = height * (1 - FOLD) + lp.Y * FOLD
-					openLocal = CFrame.new(lp.X, y, lp.Z) * lc.Rotation
-					openSize = Vector3.new(p.Size.X, math.max(0.05, p.Size.Y * FOLD), p.Size.Z)
+					m.openLocal = CFrame.new(lp.X, y, lp.Z) * lc.Rotation
+					m.openSize = Vector3.new(p.Size.X, math.max(0.05, p.Size.Y * FOLD), p.Size.Z)
+					table.insert(moves, m)
 				end
-			end
-			if openLocal then
-				table.insert(moves, {
-					part = p,
-					closedCF = p.CFrame,
-					closedSize = p.Size,
-					openCF = closed * openLocal,
-					openSize = openSize,
-				})
 			end
 		end
 	end
 	return moves
 end
 
-local function tweenParts(moves, opening)
+local function applyMoves(moves, closed, a, side)
+	for _, m in ipairs(moves) do
+		if m.hinge then
+			local angle = math.rad(88) * a * side * (m.hinge < 0 and 1 or -1)
+			local h = CFrame.new(m.hinge, 0, 0)
+			m.part.CFrame = closed * h * CFrame.Angles(0, angle, 0) * h:Inverse() * m.lc
+		else
+			m.part.CFrame = (closed * m.lc):Lerp(closed * m.openLocal, a)
+			m.part.Size = m.size:Lerp(m.openSize, a)
+		end
+	end
+end
+
+local function tweenParts(moves, closed, opening, side)
 	local nv = Instance.new("NumberValue")
 	nv.Value = opening and 0 or 1
 	nv.Changed:Connect(function(a)
-		for _, m in ipairs(moves) do
-			m.part.CFrame = m.closedCF:Lerp(m.openCF, a)
-			m.part.Size = m.closedSize:Lerp(m.openSize, a)
-		end
+		applyMoves(moves, closed, a, side)
 	end)
 	local tw = TweenService:Create(nv, TweenInfo.new(OPEN_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 		Value = opening and 1 or 0,
@@ -223,6 +229,15 @@ local function tweenParts(moves, opening)
 		nv:Destroy()
 	end)
 	tw:Play()
+end
+
+local function playerSide(closed, player)
+	local char = player and player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	if root then
+		return closed:PointToObjectSpace(root.Position).Z >= 0 and 1 or -1
+	end
+	return 1
 end
 
 local function setupDoor(model)
@@ -234,15 +249,31 @@ local function setupDoor(model)
 		return
 	end
 	model:SetAttribute("PS_DoorReady", true)
-	local closed = model:GetAttribute("ClosedPivot") or model:GetPivot()
+	local closed = model:GetPivot()
 	local kind = model:GetAttribute("DoorKind") or "hinged"
 	local moves = nil
 	if kind ~= "hinged" then
 		moves = partMoves(model, closed, kind)
 	end
+	-- hinged doors carry the prompt on the leaf; the others get a fixed anchor at hand
+	-- height, so the prompt stays in reach while a roll-up door is folded away overhead
+	local holder = leaf
+	if moves then
+		local height = model:GetAttribute("height") or 7.5
+		holder = Instance.new("Part")
+		holder.Name = "DoorPromptAnchor"
+		holder.Size = Vector3.new(0.2, 0.2, 0.2)
+		holder.Transparency = 1
+		holder.Anchored = true
+		holder.CanCollide = false
+		holder.CanQuery = false
+		holder.CanTouch = false
+		holder.CFrame = closed * CFrame.new(0, math.min(3.5, height * 0.45), 0)
+		holder.Parent = model
+	end
 	local att = Instance.new("Attachment")
 	att.Name = "DoorPrompt"
-	att.Parent = leaf
+	att.Parent = holder
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ObjectText = model:GetAttribute("Interior") and "Door" or "Entrance"
 	prompt.ActionText = "Open"
@@ -253,6 +284,7 @@ local function setupDoor(model)
 	prompt.Parent = att
 	local open = false
 	local busy = false
+	local side = 1
 	local function refresh()
 		if model:GetAttribute("locked") and not open then
 			prompt.ActionText = "Locked"
@@ -272,8 +304,11 @@ local function setupDoor(model)
 		end
 		busy = true
 		open = not open
+		if open then
+			side = playerSide(closed, player)
+		end
 		if moves then
-			tweenParts(moves, open)
+			tweenParts(moves, closed, open, side)
 		elseif open then
 			tweenPivot(model, hingeTarget(model, closed, player))
 		else

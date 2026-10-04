@@ -411,3 +411,83 @@ def to_roblox_rot(rot):
 
 def to_roblox_size(size):
     return (size[0], size[2], size[1])
+
+
+def tri_wedges(a, b, c, t):
+    """Triangle a, b, c (Roblox space) as two WedgeParts of thickness t whose upper faces lie
+    in the triangle plane.  Returns [(pos, rot row-major, size)]."""
+    def sub(u, v):
+        return (u[0] - v[0], u[1] - v[1], u[2] - v[2])
+
+    def dot(u, v):
+        return u[0] * v[0] + u[1] * v[1] + u[2] * v[2]
+
+    def cross(u, v):
+        return (u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0])
+
+    def unit(u):
+        n = math.sqrt(dot(u, u)) or 1.0
+        return (u[0] / n, u[1] / n, u[2] / n)
+    ab, ac, bc = sub(b, a), sub(c, a), sub(c, b)
+    abd, acd, bcd = dot(ab, ab), dot(ac, ac), dot(bc, bc)
+    if abd > acd and abd > bcd:
+        a, c = c, a
+    elif acd > bcd and acd > abd:
+        a, b = b, a
+    ab, ac, bc = sub(b, a), sub(c, a), sub(c, b)
+    right = unit(cross(ac, ab))
+    up = unit(cross(bc, right))
+    back = unit(bc)
+    h = abs(dot(ab, up))
+    nup = right if right[1] > 0 else (-right[0], -right[1], -right[2])
+    sh = (-nup[0] * t / 2, -nup[1] * t / 2, -nup[2] * t / 2)
+    out = []
+    for (m, r, bk, depth) in (((a, b), right, back, abs(dot(ab, back))),
+                              ((a, c), (-right[0], -right[1], -right[2]),
+                               (-back[0], -back[1], -back[2]), abs(dot(ac, back)))):
+        pos = ((m[0][0] + m[1][0]) / 2 + sh[0], (m[0][1] + m[1][1]) / 2 + sh[1],
+               (m[0][2] + m[1][2]) / 2 + sh[2])
+        rot = (r[0], up[0], bk[0], r[1], up[1], bk[1], r[2], up[2], bk[2])
+        if h > 1e-3 and depth > 1e-3:
+            out.append((pos, rot, (t, h, depth)))
+    return out
+
+
+def tri_wedge_prims(a, b, c, t, mat, collide=True):
+    """Triangle a, b, c (Blender space, any winding) as wedge Prims of thickness t below the
+    triangle plane (the Roblox-native way to draw a sloped triangle)."""
+    ra, rb, rc = to_roblox_pos(a), to_roblox_pos(b), to_roblox_pos(c)
+    out = []
+    for (pos, rot, size) in tri_wedges(ra, rb, rc, t):
+        R = mat_mul(mat_mul(_CT, rot), _C)
+        out.append(Prim("wedge", mat, (pos[0], -pos[2], pos[1]), (size[0], size[2], size[1]),
+                        R, collide))
+    return out
+
+
+def plane_box(a, b, c, t, mat="invisible"):
+    """Thin box lying on the triangle a, b, c (Blender space): its top face is the triangle's
+    bounding rectangle in the plane, aligned with edge b-c, ``t`` thick below the plane."""
+    def sub(u, v):
+        return (u[0] - v[0], u[1] - v[1], u[2] - v[2])
+
+    def unit(u):
+        n = math.sqrt(u[0] ** 2 + u[1] ** 2 + u[2] ** 2) or 1.0
+        return (u[0] / n, u[1] / n, u[2] / n)
+
+    def cross(u, v):
+        return (u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0])
+
+    def dot(u, v):
+        return u[0] * v[0] + u[1] * v[1] + u[2] * v[2]
+    X = unit(sub(c, b))
+    Z = unit(cross(sub(b, a), sub(c, a)))
+    if Z[2] < 0:
+        Z = (-Z[0], -Z[1], -Z[2])
+    Y = cross(Z, X)
+    xs = [dot(sub(p, b), X) for p in (a, b, c)]
+    ys = [dot(sub(p, b), Y) for p in (a, b, c)]
+    xm, ym = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+    pos = tuple(b[k] + X[k] * xm + Y[k] * ym - Z[k] * t / 2 for k in range(3))
+    rot = (X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2])
+    return Prim("box", mat, pos, (max(xs) - min(xs), max(ys) - min(ys), t), rot, False)
