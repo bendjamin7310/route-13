@@ -225,7 +225,7 @@ def _anchor(chunk, coll):
 
 
 def export_fbx(out, log=print, W=None, obj=False, props=True, single=None,
-               exterior_only=False):
+               exterior_only=False, parts=None):
     """Write PortSolace_<chunk>.fbx (and .obj/.mtl with ``obj``) for every chunk, or with
     ``single="Name"`` one Name.fbx for the whole town.  ``exterior_only`` leaves out
     interior geometry and the props inside buildings."""
@@ -242,7 +242,29 @@ def export_fbx(out, log=print, W=None, obj=False, props=True, single=None,
     if props and W is not None:
         for o in _prop_meshes(W, tmp, log, exterior_only):
             by_chunk[o["chunk"]].append(o)
-    if single:
+    if single and parts:
+        # contiguous west-to-east strips of chunks with about equal triangle counts
+        def key(ch):
+            i, j = (int(v) for v in ch[1:].split("_"))
+            return (i, j)
+        order = sorted(by_chunk, key=key)
+        weight = {ch: sum(_tris(o.data) for o in by_chunk[ch]) for ch in order}
+        total = sum(weight.values())
+        groups, acc, cur = [], 0, []
+        for ch in order:
+            cur.append(ch)
+            acc += weight[ch]
+            if acc >= total * (len(groups) + 1) / parts and len(groups) < parts - 1:
+                groups.append(cur)
+                cur = []
+        if cur:
+            groups.append(cur)
+        n = len(groups)
+        by_chunk = {f"{single}_part{k}of{n}": [o for ch in g for o in by_chunk[ch]]
+                    for k, g in enumerate(groups, 1)}
+        log("export: parts " + ", ".join(f"{k}: {g[0]}..{g[-1]}" for k, g in
+                                         enumerate(groups, 1)))
+    elif single:
         merged = []
         for ch in sorted(by_chunk):
             merged.extend(by_chunk[ch])
@@ -255,6 +277,8 @@ def export_fbx(out, log=print, W=None, obj=False, props=True, single=None,
         for o in objs:
             _paint_vertex_colors(o)
         a, pos = _anchor(chunk if not single else "C0_0", tmp)
+        if single:
+            a.name = f"ANCHOR_{chunk}"
         tris = sum(_tris(o.data) for o in objs)
         anchors[chunk] = {"anchor": a.name, "roblox_position": pos, "objects": len(objs),
                           "triangles": tris}
@@ -267,7 +291,7 @@ def export_fbx(out, log=print, W=None, obj=False, props=True, single=None,
                 sel += 1
             except RuntimeError:
                 pass  # object not in the view layer (excluded collection)
-        stem = single or f"PortSolace_{chunk}"
+        stem = chunk if single else f"PortSolace_{chunk}"
         path = os.path.join(out, f"{stem}.fbx")
         bpy.ops.export_scene.fbx(
             filepath=path, use_selection=True, object_types={"MESH"},

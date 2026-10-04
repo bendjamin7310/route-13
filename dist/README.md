@@ -7,6 +7,26 @@
 | **[PortSolace_Town.rbxm](PortSolace_Town.rbxm)** | The town as a model, for inserting into a place you already have. | ~8 MB |
 | [PortSolace_Test.rbxl](PortSolace_Test.rbxl) | Just the downtown block (about 36k instances), with every kind of object the big file has. If the big file won't open, try this one to narrow down why. | ~1 MB |
 
+## FBX (Roblox 3D Importer, Blender, other engines)
+
+| File | What it is |
+|---|---|
+| [fbx/PortSolace_Exterior.fbx](fbx/PortSolace_Exterior.fbx) | The whole town in one file (74 MB, ~3M triangles, 4,730 meshes): building exteriors, roads, bridges, rail, terrain, sea and creek, trees, cars, boats and street props. |
+| [fbx/PortSolace_Exterior_part1of5.fbx](fbx/PortSolace_Exterior_part1of5.fbx) … [part5of5](fbx/PortSolace_Exterior_part5of5.fbx) | The same map in 5 west-to-east strips (11–17 MB each), for importers or uploads that choke on one big file. |
+
+* **Units and placement:** 1 unit = 1 stud, Y up, and every file keeps world positions, so
+  the parts line up when you import them all.
+* **Mesh limits:** every mesh is under Roblox's 20k-triangle limit.
+* **Colours:** stored both as material colours and as vertex colours.
+* **In Roblox Studio:** use **Import 3D**. If the importer offers a "use scene position"
+  style option, keep it on. If it recentres a file, move the model so its `ANCHOR_…` cube
+  sits at the position in `PortSolace_Exterior_anchor.json`, then delete the cube.
+* **What the FBX leaves out:** interiors, indoor furniture, lights, signs' text and
+  scripts. The `.rbxl` place has all of those.
+* **Make it yourself:** `python build_town.py --fbx-single [--fbx-parts 5] [--obj]` produces
+  these files (plus OBJ). `python build_town.py --fbx --obj` writes 25 full-detail chunk
+  files including interiors.
+
 ## Open it
 
 1. Download **PortSolace.rbxl** (or the Lite one).

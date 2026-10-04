@@ -19,6 +19,7 @@ Options:
     --obj                also write a matching OBJ + MTL per chunk (implies --fbx)
     --fbx-single         one PortSolace_Exterior.fbx (+ .obj with --obj) of the whole town:
                          exteriors, roads, terrain, water and outdoor props
+    --fbx-parts N        with --fbx-single: N west-to-east files instead of one
     --roblox             export Roblox data (Luau modules, rbxmx bundles, manifest)
     --place              also write ready-to-open Roblox files (implies --roblox):
                          PortSolace.rbxl, PortSolace_Lite.rbxl, PortSolace_Town.rbxm
@@ -53,6 +54,7 @@ def parse():
     ap.add_argument("--fbx", action="store_true")
     ap.add_argument("--obj", action="store_true")
     ap.add_argument("--fbx-single", action="store_true")
+    ap.add_argument("--fbx-parts", type=int, default=0)
     ap.add_argument("--roblox", action="store_true")
     ap.add_argument("--place", action="store_true")
     ap.add_argument("--render", default="")
@@ -94,7 +96,8 @@ def main():
     if a.fbx_single:
         from townbuilder.bl.export_fbx import export_fbx
         export_fbx(os.path.join(out, "fbx"), log=log, W=W, obj=a.obj,
-                   single="PortSolace_Exterior", exterior_only=True)
+                   single="PortSolace_Exterior", exterior_only=True,
+                   parts=a.fbx_parts or None)
     elif a.fbx or a.obj:
         from townbuilder.bl.export_fbx import export_fbx
         export_fbx(os.path.join(out, "fbx"), log=log, W=W, obj=a.obj)

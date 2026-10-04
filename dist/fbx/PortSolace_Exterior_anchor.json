@@ -1,0 +1,70 @@
+{
+ "note": "Roblox studs. Files keep world positions (1 unit = 1 stud, Y up). If an importer recentres a chunk, move it so its ANCHOR part centre is at roblox_position, then delete the anchor.",
+ "chunks": {
+  "PortSolace_Exterior_part1of5": {
+   "anchor": "ANCHOR_PortSolace_Exterior_part1of5",
+   "roblox_position": [
+    -1280.0,
+    0.0,
+    1280.0
+   ],
+   "objects": 907,
+   "triangles": 668830,
+   "file": "PortSolace_Exterior_part1of5.fbx",
+   "bytes": 17034156,
+   "obj": "PortSolace_Exterior_part1of5.obj"
+  },
+  "PortSolace_Exterior_part2of5": {
+   "anchor": "ANCHOR_PortSolace_Exterior_part2of5",
+   "roblox_position": [
+    -1280.0,
+    0.0,
+    1280.0
+   ],
+   "objects": 1123,
+   "triangles": 671430,
+   "file": "PortSolace_Exterior_part2of5.fbx",
+   "bytes": 16506844,
+   "obj": "PortSolace_Exterior_part2of5.obj"
+  },
+  "PortSolace_Exterior_part3of5": {
+   "anchor": "ANCHOR_PortSolace_Exterior_part3of5",
+   "roblox_position": [
+    -1280.0,
+    0.0,
+    1280.0
+   ],
+   "objects": 995,
+   "triangles": 562624,
+   "file": "PortSolace_Exterior_part3of5.fbx",
+   "bytes": 14250892,
+   "obj": "PortSolace_Exterior_part3of5.obj"
+  },
+  "PortSolace_Exterior_part4of5": {
+   "anchor": "ANCHOR_PortSolace_Exterior_part4of5",
+   "roblox_position": [
+    -1280.0,
+    0.0,
+    1280.0
+   ],
+   "objects": 1063,
+   "triangles": 640126,
+   "file": "PortSolace_Exterior_part4of5.fbx",
+   "bytes": 15730940,
+   "obj": "PortSolace_Exterior_part4of5.obj"
+  },
+  "PortSolace_Exterior_part5of5": {
+   "anchor": "ANCHOR_PortSolace_Exterior_part5of5",
+   "roblox_position": [
+    -1280.0,
+    0.0,
+    1280.0
+   ],
+   "objects": 641,
+   "triangles": 498552,
+   "file": "PortSolace_Exterior_part5of5.fbx",
+   "bytes": 11041468,
+   "obj": "PortSolace_Exterior_part5of5.obj"
+  }
+ }
+}
