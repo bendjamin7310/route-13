@@ -14,7 +14,11 @@ Options:
     --density F          building fill density multiplier (default 1.0)
     --vegetation F       vegetation density multiplier (default 1.0)
     --no-blend           do not save PortSolace.blend
-    --fbx                export chunked FBX files for the Roblox 3D Importer
+    --fbx                export chunked FBX files for the Roblox 3D Importer (buildings,
+                         interiors, props, terrain, water; vertex colours)
+    --obj                also write a matching OBJ + MTL per chunk (implies --fbx)
+    --fbx-single         one PortSolace_Exterior.fbx (+ .obj with --obj) of the whole town:
+                         exteriors, roads, terrain, water and outdoor props
     --roblox             export Roblox data (Luau modules, rbxmx bundles, manifest)
     --place              also write ready-to-open Roblox files (implies --roblox):
                          PortSolace.rbxl, PortSolace_Lite.rbxl, PortSolace_Town.rbxm
@@ -47,6 +51,8 @@ def parse():
     ap.add_argument("--vegetation", type=float, default=1.0)
     ap.add_argument("--no-blend", action="store_true")
     ap.add_argument("--fbx", action="store_true")
+    ap.add_argument("--obj", action="store_true")
+    ap.add_argument("--fbx-single", action="store_true")
     ap.add_argument("--roblox", action="store_true")
     ap.add_argument("--place", action="store_true")
     ap.add_argument("--render", default="")
@@ -85,9 +91,13 @@ def main():
     if a.place:
         from townbuilder.rbx.place import build_all
         build_all(os.path.join(out, "roblox"), log=log)
-    if a.fbx:
+    if a.fbx_single:
         from townbuilder.bl.export_fbx import export_fbx
-        export_fbx(os.path.join(out, "fbx"), log=log)
+        export_fbx(os.path.join(out, "fbx"), log=log, W=W, obj=a.obj,
+                   single="PortSolace_Exterior", exterior_only=True)
+    elif a.fbx or a.obj:
+        from townbuilder.bl.export_fbx import export_fbx
+        export_fbx(os.path.join(out, "fbx"), log=log, W=W, obj=a.obj)
     if not a.no_blend:
         path = os.path.join(out, "PortSolace.blend")
         bpy.ops.wm.save_as_mainfile(filepath=path, compress=True)
