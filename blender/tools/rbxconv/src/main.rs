@@ -5,7 +5,7 @@
 //! Property values are plain JSON; their Roblox type comes from the reflection database
 //! (so enums are given by item name, colours as 0-1 floats, CFrames as 12 numbers ...).
 //!
-//! usage: rbxconv place|model <in.jsonl> <out.rbxl|rbxm>
+//! usage: rbxconv place|model|placexml|modelxml <in.jsonl> <out.rbxl|rbxm|rbxlx|rbxmx>
 //!        rbxconv inspect <file.rbxl|rbxm>
 //!        rbxconv dbdump <out.json>      (reflection database used for typing)
 
@@ -233,7 +233,8 @@ fn build(mode: &str, input: &str, output: &str) -> Result<()> {
     let mut out = BufWriter::new(File::create(output)?);
     match mode {
         "place" | "model" => rbx_binary::to_writer(&mut out, &dom, &top)?,
-        _ => bail!("mode must be place or model"),
+        "placexml" | "modelxml" => rbx_xml::to_writer_default(&mut out, &dom, &top)?,
+        _ => bail!("mode must be place, model, placexml or modelxml"),
     }
     out.flush()?;
     out.into_inner().map_err(|e| anyhow!("flush {output}: {e}"))?.sync_all()?;

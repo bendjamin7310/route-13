@@ -402,7 +402,6 @@ class PlaceBuilder:
                     if t in ("double", "garage", "rollup", "sliding"):
                         kind = t
                 attrs["DoorKind"] = kind
-                attrs["ClosedPivot"] = {"cf": cf(ppos, prot)}
             model = self.w.add(parent, "Model", {"Name": d.name, "WorldPivotData": cf(ppos, prot)},
                                attrs or None, tags or None)
             scaled = any(abs(s - 1.0) > 1e-3 for s in scale)
@@ -660,24 +659,80 @@ def lighting(w: Writer):
     return lit
 
 
+MAX_SOURCE = 150_000           # characters per ModuleScript (keeps every script small)
+
+
+def _long(text):
+    eq = "=" * 3
+    while f"]{eq}]" in text:
+        eq += "="
+    return f"[{eq}[\n{text}\n]{eq}]"
+
+
+def _packs(items, size_of, limit=MAX_SOURCE):
+    pack, n = [], 0
+    for it in items:
+        k = size_of(it)
+        if pack and n + k > limit:
+            yield pack
+            pack, n = [], 0
+        pack.append(it)
+        n += k
+    if pack:
+        yield pack
+
+
+def terrain_modules(w, parent, src):
+    """TerrainData as a small header module plus child modules of row strings."""
+    head = src[:src.index("\theights = {")]
+    body = head[head.index("return {") + len("return {"):]
+    rows = {}
+    for name in ("heights", "mats", "water"):
+        block = re.search(r"\t" + name + r" = \{\n(.*?)\n\t\}", src, re.S).group(1)
+        rows[name] = re.findall(r'"([^"]*)"', block)
+    lua = ("-- Generated terrain data: 4-stud grid, row i = Blender Y (Roblox -Z), col j = X.\n"
+           "-- Rows live in child modules so that no script is very large.\n"
+           "local T = {" + body.rstrip() + "\n}\n"
+           "local function rows(prefix)\n"
+           "\tlocal out, k = {}, 1\n"
+           "\twhile script:FindFirstChild(prefix .. k) do\n"
+           "\t\tfor _, r in ipairs(require(script[prefix .. k])) do\n"
+           "\t\t\tout[#out + 1] = r\n\t\tend\n\t\tk += 1\n\tend\n\treturn out\nend\n"
+           "T.heights = rows(\"Heights\")\nT.mats = rows(\"Mats\")\nT.water = rows(\"Water\")\n"
+           "return T\n")
+    td = w.add(parent, "ModuleScript", {"Name": "TerrainData", "Source": lua})
+    for name, prefix in (("heights", "Heights"), ("mats", "Mats"), ("water", "Water")):
+        for k, pack in enumerate(_packs(rows[name], lambda r: len(r) + 6), 1):
+            src_k = "return {\n" + "\n".join(f'\t"{r}",' for r in pack) + "\n}\n"
+            w.add(td, "ModuleScript", {"Name": f"{prefix}{k}", "Source": src_k})
+
+
+def carve_modules(w, parent, carve):
+    """CarveData: returns the carve records as one string, stored in small child modules."""
+    lua = ("-- Generated: terrain volumes cleared inside buildings and above roads\n"
+           "local parts, k = {}, 1\n"
+           "while script:FindFirstChild(\"Part\" .. k) do\n"
+           "\tparts[k] = require(script[\"Part\" .. k])\n\tk += 1\nend\n"
+           "return table.concat(parts, \"\\n\")\n")
+    cd = w.add(parent, "ModuleScript", {"Name": "CarveData", "Source": lua})
+    lines = [ln for ln in carve.split("\n") if ln]
+    for k, pack in enumerate(_packs(lines, lambda ln: len(ln) + 1), 1):
+        w.add(cd, "ModuleScript", {"Name": f"Part{k}",
+                                   "Source": "return " + _long("\n".join(pack)) + "\n"})
+
+
 def write_instances(data_dir, manifest_path, out_jsonl, mode="place", interiors=True,
-                    prop_detail=3, preview=True, log=print):
+                    prop_detail=3, preview=True, chunks=None, log=print):
     """Expand the Roblox export into an instance list for rbxconv."""
     manifest = json.load(open(manifest_path))
     grid = TerrainGrid(os.path.join(data_dir, "TerrainData.lua"))
     w = Writer(out_jsonl)
     ws = None
     if mode == "place":
-        # CurrentCamera is a Ref resolved by rbxconv once the camera exists
         ws = w.add(None, "Workspace", {"StreamingEnabled": True, "StreamingTargetRadius": 768,
-                                       "StreamingMinRadius": 256,
-                                       "CurrentCamera": {"ref": 2}})
-        eye, at = (520.0, 230.0, 470.0), (164.0, 8.0, 60.0)
-        d = (at[0] - eye[0], at[1] - eye[1], at[2] - eye[2])
-        w.add(ws, "Camera", {"Name": "Camera", "CFrame": cf(eye, look_at(eye, d)),
-                             "Focus": cf(at), "FieldOfView": 70.0})
+                                       "StreamingMinRadius": 256})
     pb = PlaceBuilder(data_dir, manifest, w, interiors=interiors, prop_detail=prop_detail)
-    carve = pb.build_town(ws)
+    carve = pb.build_town(ws, chunks)
     if preview:
         pb.preview_ground(grid)
     # spawn on a clear spot of the town square (it has ground even before the terrain)
@@ -704,16 +759,11 @@ def write_instances(data_dir, manifest_path, out_jsonl, mode="place", interiors=
                           "Source": rd(os.path.join(REPO_ROBLOX, "TerrainLoader.server.lua"))})
     w.add(store, "ModuleScript", {"Name": "TownBuilder",
                                   "Source": rd(os.path.join(REPO_ROBLOX, "TownBuilder.lua"))})
-    for nm in ("TerrainData", "Manifest", "Palette"):
+    for nm in ("Manifest", "Palette"):
         w.add(store, "ModuleScript", {"Name": nm,
                                       "Source": rd(os.path.join(data_dir, nm + ".lua"))})
-    eq = "=" * 3
-    while f"]{eq}]" in carve:
-        eq += "="
-    w.add(store, "ModuleScript", {
-        "Name": "CarveData",
-        "Source": f"-- Generated: terrain volumes cleared inside buildings and above roads\n"
-                  f"return [{eq}[\n{carve}\n]{eq}]\n"})
+    terrain_modules(w, store, rd(os.path.join(data_dir, "TerrainData.lua")))
+    carve_modules(w, store, carve)
     w.close()
     log(f"{os.path.basename(out_jsonl)}: {w.n} instances ({pb.stats})")
     return w.n, pb.stats, w.counts

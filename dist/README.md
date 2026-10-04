@@ -5,12 +5,14 @@
 | **[PortSolace.rbxl](PortSolace.rbxl)** | The whole town as a Roblox place: every building with its interior, furniture, street props, cars, boats, trees, ~5,400 lights, signs, gameplay markers, the lighting preset, a spawn point and the runtime scripts. | ~8 MB |
 | **[PortSolace_Lite.rbxl](PortSolace_Lite.rbxl)** | The same place, but only landmarks and the downtown/civic core have interiors (~210k parts instead of ~365k). Start here on an average PC. | ~5 MB |
 | **[PortSolace_Town.rbxm](PortSolace_Town.rbxm)** | The town as a model, for inserting into a place you already have. | ~8 MB |
+| [PortSolace_Test.rbxl](PortSolace_Test.rbxl) | Just the downtown block (about 36k instances), with every kind of object the big file has. If the big file won't open, try this one to narrow down why. | ~1 MB |
 
 ## Open it
 
 1. Download **PortSolace.rbxl** (or the Lite one).
-2. In Roblox Studio, use **File → Open from File…** and pick the file. A big place takes a little
-   while to open.
+2. In **Roblox Studio** (not the Roblox player app), use **File → Open from File…** and pick
+   the `.rbxl`. `.rbxm` files are models: insert those into a place instead of opening them.
+   A big place takes a little while to open.
 3. Press **Play** to walk around. You spawn on the Town Square.
 
 That's all you need to do. The town stands on a coarse preview ground made of parts until the

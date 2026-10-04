@@ -438,6 +438,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "rbx_xml"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df4dba3154bef50fe1ba41cf06a066b9cd33bcfbf1c103e8db0818d8b4528b31"
+dependencies = [
+ "ahash",
+ "base64",
+ "log",
+ "rbx_dom_weak",
+ "rbx_reflection",
+ "rbx_reflection_database",
+ "xml-rs",
+]
+
+[[package]]
 name = "rbxconv"
 version = "0.1.0"
 dependencies = [
@@ -447,6 +462,7 @@ dependencies = [
  "rbx_reflection",
  "rbx_reflection_database",
  "rbx_types",
+ "rbx_xml",
  "serde_json",
 ]
 
@@ -677,6 +693,21 @@ name = "wit-bindgen"
 version = "0.57.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
+
+[[package]]
+name = "xml"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f45bb2c13fec6a6cb4c0f76a7e94839e110a14ec803ec2940777a94c347bc52"
+
+[[package]]
+name = "xml-rs"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3a56132a0d6ecbe77352edc10232f788fc4ceefefff4cab784a98e0e16b6b51"
+dependencies = [
+ "xml",
+]
 
 [[package]]
 name = "zerocopy"
