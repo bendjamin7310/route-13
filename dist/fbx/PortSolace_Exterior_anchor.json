@@ -8,10 +8,10 @@
     0.0,
     1280.0
    ],
-   "objects": 907,
-   "triangles": 668830,
+   "objects": 863,
+   "triangles": 675022,
    "file": "PortSolace_Exterior_part1of5.fbx",
-   "bytes": 17034156,
+   "bytes": 17069628,
    "obj": "PortSolace_Exterior_part1of5.obj"
   },
   "PortSolace_Exterior_part2of5": {
@@ -21,10 +21,10 @@
     0.0,
     1280.0
    ],
-   "objects": 1123,
-   "triangles": 671430,
+   "objects": 1140,
+   "triangles": 670716,
    "file": "PortSolace_Exterior_part2of5.fbx",
-   "bytes": 16506844,
+   "bytes": 16560972,
    "obj": "PortSolace_Exterior_part2of5.obj"
   },
   "PortSolace_Exterior_part3of5": {
@@ -34,10 +34,10 @@
     0.0,
     1280.0
    ],
-   "objects": 995,
-   "triangles": 562624,
+   "objects": 1039,
+   "triangles": 578680,
    "file": "PortSolace_Exterior_part3of5.fbx",
-   "bytes": 14250892,
+   "bytes": 14619644,
    "obj": "PortSolace_Exterior_part3of5.obj"
   },
   "PortSolace_Exterior_part4of5": {
@@ -47,10 +47,10 @@
     0.0,
     1280.0
    ],
-   "objects": 1063,
-   "triangles": 640126,
+   "objects": 1055,
+   "triangles": 627670,
    "file": "PortSolace_Exterior_part4of5.fbx",
-   "bytes": 15730940,
+   "bytes": 15464652,
    "obj": "PortSolace_Exterior_part4of5.obj"
   },
   "PortSolace_Exterior_part5of5": {
@@ -60,10 +60,10 @@
     0.0,
     1280.0
    ],
-   "objects": 641,
-   "triangles": 498552,
+   "objects": 653,
+   "triangles": 509704,
    "file": "PortSolace_Exterior_part5of5.fbx",
-   "bytes": 11041468,
+   "bytes": 11290716,
    "obj": "PortSolace_Exterior_part5of5.obj"
   }
  }

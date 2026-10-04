@@ -11,7 +11,7 @@
 
 | File | What it is |
 |---|---|
-| [fbx/PortSolace_Exterior.fbx](fbx/PortSolace_Exterior.fbx) | The whole town in one file (74 MB, ~3M triangles, 4,730 meshes): building exteriors, roads, bridges, rail, terrain, sea and creek, trees, cars, boats and street props. |
+| [fbx/PortSolace_Exterior.fbx](fbx/PortSolace_Exterior.fbx) | The whole town in one file (74 MB, ~3M triangles, 4,751 meshes): building exteriors, roads, bridges, rail, terrain, sea and creek, trees, cars, boats and street props. |
 | [fbx/PortSolace_Exterior_part1of5.fbx](fbx/PortSolace_Exterior_part1of5.fbx) … [part5of5](fbx/PortSolace_Exterior_part5of5.fbx) | The same map in 5 west-to-east strips (11–17 MB each), for importers or uploads that choke on one big file. |
 
 * **Units and placement:** 1 unit = 1 stud, Y up, and every file keeps world positions, so
