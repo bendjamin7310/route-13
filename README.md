@@ -11,3 +11,7 @@ Get to the sea at Mile 100 by sunrise.
 ## Docs
 
 - **[Game Design Document](docs/GAME_DESIGN.md):** the pitch, the Plate Game mechanic, the 100-mile run, factions, story and endings, progression, Roblox build notes and the build order.
+
+## Assets
+
+- **[The Mule](assets/vehicles/mule/README.md):** the 4x4 double-cab pickup (Hilux-style), ready to import into Roblox Studio: FBX/GLB, wear textures, four R15-sized seats and a setup module. Its generator lives in [`tools/mule`](tools/mule/README.md).

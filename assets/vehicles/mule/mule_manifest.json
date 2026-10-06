@@ -1,0 +1,3398 @@
+{
+ "name": "Mule",
+ "description": "Hilux-style 4x4 double-cab pickup for Route 13",
+ "studs_per_metre": 4.25,
+ "triangles_total": 97178,
+ "size_studs": {
+  "length": 22.45,
+  "width_with_mirrors": 9.42,
+  "height": 7.7
+ },
+ "wheels": {
+  "radius_studs": 1.636,
+  "width_studs": 1.084,
+  "centres_studs": {
+   "FL": [
+    -3.2938,
+    1.615,
+    -6.5556
+   ],
+   "FR": [
+    3.2938,
+    1.615,
+    -6.5556
+   ],
+   "RL": [
+    -3.315,
+    1.615,
+    6.5556
+   ],
+   "RR": [
+    3.315,
+    1.615,
+    6.5556
+   ]
+  }
+ },
+ "seats": [
+  {
+   "name": "SeatAnchor_Driver",
+   "top_centre_studs": [
+    -1.53,
+    3.2938,
+    0.6475
+   ],
+   "size_studs": [
+    1.7,
+    0.213,
+    1.7
+   ]
+  },
+  {
+   "name": "SeatAnchor_Passenger",
+   "top_centre_studs": [
+    1.53,
+    3.2938,
+    0.6475
+   ],
+   "size_studs": [
+    1.7,
+    0.213,
+    1.7
+   ]
+  },
+  {
+   "name": "SeatAnchor_RearLeft",
+   "top_centre_studs": [
+    -1.53,
+    3.2513,
+    3.5375
+   ],
+   "size_studs": [
+    1.7,
+    0.213,
+    1.7
+   ]
+  },
+  {
+   "name": "SeatAnchor_RearRight",
+   "top_centre_studs": [
+    1.53,
+    3.2513,
+    3.5375
+   ],
+   "size_studs": [
+    1.7,
+    0.213,
+    1.7
+   ]
+  }
+ ],
+ "materials": {
+  "Paint": {
+   "color_rgb": [
+    216,
+    214,
+    207
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "TrimBlack": {
+   "color_rgb": [
+    31,
+    32,
+    34
+   ],
+   "roblox_material": "Plastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "TrimDark": {
+   "color_rgb": [
+    43,
+    45,
+    48
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Chrome": {
+   "color_rgb": [
+    180,
+    184,
+    188
+   ],
+   "roblox_material": "Metal",
+   "transparency": 0.0,
+   "reflectance": 0.15
+  },
+  "Gunmetal": {
+   "color_rgb": [
+    74,
+    77,
+    81
+   ],
+   "roblox_material": "Metal",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Rubber": {
+   "color_rgb": [
+    27,
+    27,
+    28
+   ],
+   "roblox_material": "Rubber",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Glass": {
+   "color_rgb": [
+    46,
+    53,
+    57
+   ],
+   "roblox_material": "Glass",
+   "transparency": 0.45,
+   "reflectance": 0.05
+  },
+  "LensClear": {
+   "color_rgb": [
+    213,
+    220,
+    226
+   ],
+   "roblox_material": "Glass",
+   "transparency": 0.6,
+   "reflectance": 0.05
+  },
+  "LensRed": {
+   "color_rgb": [
+    140,
+    28,
+    28
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.1,
+   "reflectance": 0.0
+  },
+  "LensAmber": {
+   "color_rgb": [
+    194,
+    105,
+    15
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.1,
+   "reflectance": 0.0
+  },
+  "LensWhite": {
+   "color_rgb": [
+    228,
+    229,
+    226
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.05,
+   "reflectance": 0.0
+  },
+  "LightDRL": {
+   "color_rgb": [
+    243,
+    245,
+    248
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "MirrorGlass": {
+   "color_rgb": [
+    142,
+    149,
+    155
+   ],
+   "roblox_material": "Glass",
+   "transparency": 0.0,
+   "reflectance": 0.6
+  },
+  "Bedliner": {
+   "color_rgb": [
+    40,
+    41,
+    43
+   ],
+   "roblox_material": "Plastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "WheelWell": {
+   "color_rgb": [
+    25,
+    25,
+    26
+   ],
+   "roblox_material": "Plastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Underbody": {
+   "color_rgb": [
+    42,
+    43,
+    45
+   ],
+   "roblox_material": "Plastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "InteriorTrim": {
+   "color_rgb": [
+    58,
+    60,
+    63
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "DoorTrim": {
+   "color_rgb": [
+    78,
+    81,
+    85
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Headliner": {
+   "color_rgb": [
+    93,
+    95,
+    99
+   ],
+   "roblox_material": "Fabric",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "FloorRubber": {
+   "color_rgb": [
+    28,
+    29,
+    31
+   ],
+   "roblox_material": "Rubber",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Dash": {
+   "color_rgb": [
+    42,
+    44,
+    47
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "SeatFabric": {
+   "color_rgb": [
+    46,
+    48,
+    51
+   ],
+   "roblox_material": "Fabric",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "MetalAccent": {
+   "color_rgb": [
+    139,
+    143,
+    148
+   ],
+   "roblox_material": "Metal",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Screen": {
+   "color_rgb": [
+    13,
+    15,
+    17
+   ],
+   "roblox_material": "Glass",
+   "transparency": 0.0,
+   "reflectance": 0.1
+  },
+  "Gauge": {
+   "color_rgb": [
+    201,
+    205,
+    210
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "RimPaint": {
+   "color_rgb": [
+    38,
+    39,
+    42
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "BrakeDisc": {
+   "color_rgb": [
+    108,
+    110,
+    112
+   ],
+   "roblox_material": "Metal",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Plate": {
+   "color_rgb": [
+    236,
+    236,
+    230
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 0.0,
+   "reflectance": 0.0
+  },
+  "Anchor": {
+   "color_rgb": [
+    79,
+    163,
+    255
+   ],
+   "roblox_material": "SmoothPlastic",
+   "transparency": 1.0,
+   "reflectance": 0.0
+  }
+ },
+ "parts": [
+  {
+   "name": "Badge_Front",
+   "group": "Body",
+   "material": "Chrome",
+   "triangles": 500,
+   "pivot_studs": [
+    0.0,
+    3.889,
+    -10.3031
+   ],
+   "centre_studs": [
+    0.0,
+    3.889,
+    -10.3031
+   ],
+   "size_studs": [
+    0.577,
+    0.374,
+    0.036
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Bed",
+   "group": "Body",
+   "material": "Paint",
+   "triangles": 2675,
+   "pivot_studs": [
+    -0.0,
+    4.0222,
+    8.2963
+   ],
+   "centre_studs": [
+    -0.0,
+    4.0222,
+    8.2963
+   ],
+   "size_studs": [
+    7.891,
+    2.921,
+    7.03
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Body_Bed_Bedliner",
+   "group": "Body",
+   "material": "Bedliner",
+   "triangles": 2014,
+   "pivot_studs": [
+    -0.0,
+    4.4732,
+    8.3011
+   ],
+   "centre_studs": [
+    -0.0,
+    4.4732,
+    8.3011
+   ],
+   "size_studs": [
+    6.545,
+    2.019,
+    6.615
+   ],
+   "texture_color": "mule_bedliner_color.png",
+   "texture_roughness": "mule_bedliner_roughness.png"
+  },
+  {
+   "name": "Body_Bed_TrimBlack",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 397,
+   "pivot_studs": [
+    0.0,
+    4.1701,
+    11.6632
+   ],
+   "centre_studs": [
+    0.0,
+    4.1701,
+    11.6632
+   ],
+   "size_studs": [
+    7.705,
+    2.353,
+    0.296
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Bed_Underbody",
+   "group": "Body",
+   "material": "Underbody",
+   "triangles": 103,
+   "pivot_studs": [
+    0.0042,
+    2.5713,
+    8.2874
+   ],
+   "centre_studs": [
+    0.0042,
+    2.5713,
+    8.2874
+   ],
+   "size_studs": [
+    7.666,
+    0.043,
+    6.954
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Bed_WheelWell",
+   "group": "Body",
+   "material": "WheelWell",
+   "triangles": 807,
+   "pivot_studs": [
+    0.0001,
+    3.1557,
+    6.7153
+   ],
+   "centre_studs": [
+    0.0001,
+    3.1557,
+    6.7153
+   ],
+   "size_studs": [
+    7.815,
+    1.211,
+    3.868
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Cab",
+   "group": "Body",
+   "material": "Paint",
+   "triangles": 7815,
+   "pivot_studs": [
+    0.0,
+    4.836,
+    -2.7572
+   ],
+   "centre_studs": [
+    0.0,
+    4.836,
+    -2.7572
+   ],
+   "size_studs": [
+    7.907,
+    5.671,
+    14.801
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Body_Cab_FloorRubber",
+   "group": "Body",
+   "material": "FloorRubber",
+   "triangles": 253,
+   "pivot_studs": [
+    0.0232,
+    2.7711,
+    0.4462
+   ],
+   "centre_studs": [
+    0.0232,
+    2.7711,
+    0.4462
+   ],
+   "size_studs": [
+    6.925,
+    1.08,
+    7.948
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Cab_Headliner",
+   "group": "Body",
+   "material": "Headliner",
+   "triangles": 480,
+   "pivot_studs": [
+    -0.0002,
+    7.2943,
+    1.9537
+   ],
+   "centre_studs": [
+    -0.0002,
+    7.2943,
+    1.9537
+   ],
+   "size_studs": [
+    5.111,
+    0.372,
+    4.59
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Cab_InteriorTrim",
+   "group": "Body",
+   "material": "InteriorTrim",
+   "triangles": 1767,
+   "pivot_studs": [
+    -0.0065,
+    4.845,
+    0.409
+   ],
+   "centre_studs": [
+    -0.0065,
+    4.845,
+    0.409
+   ],
+   "size_studs": [
+    7.456,
+    5.227,
+    8.128
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Cab_TrimBlack",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 732,
+   "pivot_studs": [
+    0.0027,
+    5.5747,
+    -2.8193
+   ],
+   "centre_studs": [
+    0.0027,
+    5.5747,
+    -2.8193
+   ],
+   "size_studs": [
+    6.59,
+    3.598,
+    14.68
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Cab_TrimDark",
+   "group": "Body",
+   "material": "TrimDark",
+   "triangles": 1121,
+   "pivot_studs": [
+    -0.0001,
+    4.2872,
+    -9.4687
+   ],
+   "centre_studs": [
+    -0.0001,
+    4.2872,
+    -9.4687
+   ],
+   "size_studs": [
+    7.701,
+    0.755,
+    1.378
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Cab_Underbody",
+   "group": "Body",
+   "material": "Underbody",
+   "triangles": 186,
+   "pivot_studs": [
+    0.0002,
+    2.0388,
+    -2.3338
+   ],
+   "centre_studs": [
+    0.0002,
+    2.0388,
+    -2.3338
+   ],
+   "size_studs": [
+    7.265,
+    0.083,
+    13.758
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Body_Cab_WheelWell",
+   "group": "Body",
+   "material": "WheelWell",
+   "triangles": 1144,
+   "pivot_studs": [
+    -0.0004,
+    2.8795,
+    -2.082
+   ],
+   "centre_studs": [
+    -0.0004,
+    2.8795,
+    -2.082
+   ],
+   "size_studs": [
+    7.816,
+    1.764,
+    13.387
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Bumper_Front",
+   "group": "Body",
+   "material": "Paint",
+   "triangles": 3062,
+   "pivot_studs": [
+    0.0001,
+    3.4122,
+    -9.1164
+   ],
+   "centre_studs": [
+    0.0001,
+    3.4122,
+    -9.1164
+   ],
+   "size_studs": [
+    7.911,
+    1.556,
+    2.572
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Bumper_Front_Lower",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 1600,
+   "pivot_studs": [
+    -0.0003,
+    2.1697,
+    -9.4946
+   ],
+   "centre_studs": [
+    -0.0003,
+    2.1697,
+    -9.4946
+   ],
+   "size_studs": [
+    7.766,
+    0.897,
+    1.815
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Bumper_Front_WheelWell",
+   "group": "Body",
+   "material": "WheelWell",
+   "triangles": 138,
+   "pivot_studs": [
+    0.0016,
+    3.0728,
+    -8.2321
+   ],
+   "centre_studs": [
+    0.0016,
+    3.0728,
+    -8.2321
+   ],
+   "size_studs": [
+    7.886,
+    0.876,
+    0.803
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Bumper_Rear",
+   "group": "Body",
+   "material": "Gunmetal",
+   "triangles": 1800,
+   "pivot_studs": [
+    0.0,
+    2.4607,
+    11.7034
+   ],
+   "centre_studs": [
+    0.0,
+    2.4607,
+    11.7034
+   ],
+   "size_studs": [
+    6.23,
+    0.926,
+    0.669
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Bumper_Rear_Caps",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 700,
+   "pivot_studs": [
+    0.0,
+    2.4608,
+    11.7034
+   ],
+   "centre_studs": [
+    0.0,
+    2.4608,
+    11.7034
+   ],
+   "size_studs": [
+    7.284,
+    0.926,
+    0.669
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Bumper_Rear_Step",
+   "group": "Body",
+   "material": "Rubber",
+   "triangles": 400,
+   "pivot_studs": [
+    -0.0,
+    2.9006,
+    11.7194
+   ],
+   "centre_studs": [
+    -0.0,
+    2.9006,
+    11.7194
+   ],
+   "size_studs": [
+    2.737,
+    0.072,
+    0.663
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Console",
+   "group": "Interior",
+   "material": "Dash",
+   "triangles": 1100,
+   "pivot_studs": [
+    0.0,
+    2.9474,
+    -0.3719
+   ],
+   "centre_studs": [
+    0.0,
+    2.9474,
+    -0.3719
+   ],
+   "size_studs": [
+    0.892,
+    1.432,
+    3.591
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Cowl",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 500,
+   "pivot_studs": [
+    0.0006,
+    5.2757,
+    -3.3595
+   ],
+   "centre_studs": [
+    0.0006,
+    5.2757,
+    -3.3595
+   ],
+   "size_studs": [
+    6.227,
+    0.415,
+    0.659
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Dash_Controls",
+   "group": "Interior",
+   "material": "TrimBlack",
+   "triangles": 420,
+   "pivot_studs": [
+    0.0005,
+    3.9794,
+    -1.7425
+   ],
+   "centre_studs": [
+    0.0005,
+    3.9794,
+    -1.7425
+   ],
+   "size_studs": [
+    0.852,
+    0.668,
+    0.153
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Dash_Gauges",
+   "group": "Interior",
+   "material": "Gauge",
+   "triangles": 240,
+   "pivot_studs": [
+    -1.531,
+    4.5807,
+    -2.2142
+   ],
+   "centre_studs": [
+    -1.531,
+    4.5807,
+    -2.2142
+   ],
+   "size_studs": [
+    1.115,
+    0.473,
+    0.059
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Dash_Needles",
+   "group": "Interior",
+   "material": "LensAmber",
+   "triangles": 80,
+   "pivot_studs": [
+    -1.5849,
+    4.6562,
+    -2.1763
+   ],
+   "centre_studs": [
+    -1.5849,
+    4.6562,
+    -2.1763
+   ],
+   "size_studs": [
+    0.766,
+    0.176,
+    0.025
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Dash_Screen",
+   "group": "Interior",
+   "material": "Screen",
+   "triangles": 60,
+   "pivot_studs": [
+    0.0,
+    4.5684,
+    -1.8063
+   ],
+   "centre_studs": [
+    0.0,
+    4.5684,
+    -1.8063
+   ],
+   "size_studs": [
+    0.885,
+    0.451,
+    0.051
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Dash_Vents",
+   "group": "Interior",
+   "material": "TrimBlack",
+   "triangles": 700,
+   "pivot_studs": [
+    -0.0002,
+    4.3689,
+    -1.9082
+   ],
+   "centre_studs": [
+    -0.0002,
+    4.3689,
+    -1.9082
+   ],
+   "size_studs": [
+    6.248,
+    0.656,
+    0.247
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Dashboard",
+   "group": "Interior",
+   "material": "Dash",
+   "triangles": 2838,
+   "pivot_studs": [
+    0.0463,
+    3.9025,
+    -2.671
+   ],
+   "centre_studs": [
+    0.0463,
+    3.9025,
+    -2.671
+   ],
+   "size_studs": [
+    6.899,
+    2.536,
+    1.801
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "DomeLight",
+   "group": "Interior",
+   "material": "LensWhite",
+   "triangles": 60,
+   "pivot_studs": [
+    -0.0001,
+    7.446,
+    1.9124
+   ],
+   "centre_studs": [
+    -0.0001,
+    7.446,
+    1.9124
+   ],
+   "size_studs": [
+    0.721,
+    0.085,
+    0.407
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "DoorHandles_L",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 300,
+   "pivot_studs": [
+    -3.8505,
+    4.76,
+    2.38
+   ],
+   "centre_studs": [
+    -3.8505,
+    4.76,
+    2.38
+   ],
+   "size_studs": [
+    0.102,
+    0.149,
+    3.613
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "DoorHandles_R",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 300,
+   "pivot_studs": [
+    3.8505,
+    4.76,
+    2.38
+   ],
+   "centre_studs": [
+    3.8505,
+    4.76,
+    2.38
+   ],
+   "size_studs": [
+    0.102,
+    0.149,
+    3.613
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_FL",
+   "group": "Doors",
+   "material": "Paint",
+   "triangles": 607,
+   "pivot_studs": [
+    -3.825,
+    4.25,
+    -3.3788
+   ],
+   "centre_studs": [
+    -3.2576,
+    4.879,
+    -0.9776
+   ],
+   "size_studs": [
+    1.394,
+    5.147,
+    4.867
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Door_FL_DoorTrim",
+   "group": "Doors",
+   "material": "DoorTrim",
+   "triangles": 1240,
+   "pivot_studs": [
+    -3.825,
+    4.25,
+    -3.3788
+   ],
+   "centre_studs": [
+    -3.1434,
+    4.8758,
+    -0.9776
+   ],
+   "size_studs": [
+    1.168,
+    5.14,
+    4.867
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_FL_Glass",
+   "group": "Doors",
+   "material": "Glass",
+   "triangles": 308,
+   "pivot_studs": [
+    -3.288,
+    6.4047,
+    -0.4671
+   ],
+   "centre_studs": [
+    -3.288,
+    6.4047,
+    -0.4671
+   ],
+   "size_studs": [
+    0.549,
+    1.853,
+    3.569
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_FL_InnerHandle",
+   "group": "Interior",
+   "material": "MetalAccent",
+   "triangles": 70,
+   "pivot_studs": [
+    -3.4765,
+    4.4413,
+    -2.3799
+   ],
+   "centre_studs": [
+    -3.4765,
+    4.4413,
+    -2.3799
+   ],
+   "size_studs": [
+    0.085,
+    0.085,
+    0.407
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_FL_TrimBlack",
+   "group": "Doors",
+   "material": "TrimBlack",
+   "triangles": 553,
+   "pivot_studs": [
+    -3.825,
+    4.25,
+    -3.3788
+   ],
+   "centre_studs": [
+    -3.0819,
+    6.3215,
+    -0.9075
+   ],
+   "size_studs": [
+    1.042,
+    2.262,
+    4.726
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_FR",
+   "group": "Doors",
+   "material": "Paint",
+   "triangles": 699,
+   "pivot_studs": [
+    3.825,
+    4.25,
+    -3.3788
+   ],
+   "centre_studs": [
+    3.2576,
+    4.879,
+    -0.9776
+   ],
+   "size_studs": [
+    1.394,
+    5.147,
+    4.867
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Door_FR_DoorTrim",
+   "group": "Doors",
+   "material": "DoorTrim",
+   "triangles": 1183,
+   "pivot_studs": [
+    3.825,
+    4.25,
+    -3.3788
+   ],
+   "centre_studs": [
+    3.143,
+    4.8758,
+    -0.9777
+   ],
+   "size_studs": [
+    1.169,
+    5.14,
+    4.867
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_FR_Glass",
+   "group": "Doors",
+   "material": "Glass",
+   "triangles": 308,
+   "pivot_studs": [
+    3.288,
+    6.4047,
+    -0.4671
+   ],
+   "centre_studs": [
+    3.288,
+    6.4047,
+    -0.4671
+   ],
+   "size_studs": [
+    0.549,
+    1.853,
+    3.569
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_FR_InnerHandle",
+   "group": "Interior",
+   "material": "MetalAccent",
+   "triangles": 70,
+   "pivot_studs": [
+    3.4765,
+    4.4413,
+    -2.3799
+   ],
+   "centre_studs": [
+    3.4765,
+    4.4413,
+    -2.3799
+   ],
+   "size_studs": [
+    0.085,
+    0.085,
+    0.407
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_FR_TrimBlack",
+   "group": "Doors",
+   "material": "TrimBlack",
+   "triangles": 518,
+   "pivot_studs": [
+    3.825,
+    4.25,
+    -3.3788
+   ],
+   "centre_studs": [
+    3.0799,
+    6.3184,
+    -0.9073
+   ],
+   "size_studs": [
+    1.038,
+    2.268,
+    4.726
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_RL",
+   "group": "Doors",
+   "material": "Paint",
+   "triangles": 341,
+   "pivot_studs": [
+    -3.825,
+    4.25,
+    1.4875
+   ],
+   "centre_studs": [
+    -3.2576,
+    4.879,
+    2.9219
+   ],
+   "size_studs": [
+    1.394,
+    5.147,
+    2.89
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Door_RL_DoorTrim",
+   "group": "Doors",
+   "material": "DoorTrim",
+   "triangles": 1457,
+   "pivot_studs": [
+    -3.825,
+    4.25,
+    1.4875
+   ],
+   "centre_studs": [
+    -3.1354,
+    4.8786,
+    2.9219
+   ],
+   "size_studs": [
+    1.15,
+    5.146,
+    2.89
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_RL_Glass",
+   "group": "Doors",
+   "material": "Glass",
+   "triangles": 284,
+   "pivot_studs": [
+    -3.2789,
+    6.4366,
+    2.8738
+   ],
+   "centre_studs": [
+    -3.2789,
+    6.4366,
+    2.8738
+   ],
+   "size_studs": [
+    0.531,
+    1.789,
+    2.518
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_RL_InnerHandle",
+   "group": "Interior",
+   "material": "MetalAccent",
+   "triangles": 70,
+   "pivot_studs": [
+    -3.4765,
+    4.4838,
+    1.8698
+   ],
+   "centre_studs": [
+    -3.4765,
+    4.4838,
+    1.8698
+   ],
+   "size_studs": [
+    0.085,
+    0.085,
+    0.406
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_RL_TrimBlack",
+   "group": "Doors",
+   "material": "TrimBlack",
+   "triangles": 202,
+   "pivot_studs": [
+    -3.825,
+    4.25,
+    1.4875
+   ],
+   "centre_studs": [
+    -3.2663,
+    6.4837,
+    2.8639
+   ],
+   "size_studs": [
+    0.687,
+    1.937,
+    2.774
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_RR",
+   "group": "Doors",
+   "material": "Paint",
+   "triangles": 594,
+   "pivot_studs": [
+    3.825,
+    4.25,
+    1.4875
+   ],
+   "centre_studs": [
+    3.2585,
+    4.879,
+    2.9219
+   ],
+   "size_studs": [
+    1.396,
+    5.147,
+    2.89
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Door_RR_DoorTrim",
+   "group": "Doors",
+   "material": "DoorTrim",
+   "triangles": 1016,
+   "pivot_studs": [
+    3.825,
+    4.25,
+    1.4875
+   ],
+   "centre_studs": [
+    3.1353,
+    4.8765,
+    2.9219
+   ],
+   "size_studs": [
+    1.15,
+    5.142,
+    2.89
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_RR_Glass",
+   "group": "Doors",
+   "material": "Glass",
+   "triangles": 284,
+   "pivot_studs": [
+    3.2789,
+    6.4366,
+    2.8738
+   ],
+   "centre_studs": [
+    3.2789,
+    6.4366,
+    2.8738
+   ],
+   "size_studs": [
+    0.531,
+    1.789,
+    2.518
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_RR_InnerHandle",
+   "group": "Interior",
+   "material": "MetalAccent",
+   "triangles": 70,
+   "pivot_studs": [
+    3.4765,
+    4.4838,
+    1.8698
+   ],
+   "centre_studs": [
+    3.4765,
+    4.4838,
+    1.8698
+   ],
+   "size_studs": [
+    0.085,
+    0.085,
+    0.406
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Door_RR_TrimBlack",
+   "group": "Doors",
+   "material": "TrimBlack",
+   "triangles": 390,
+   "pivot_studs": [
+    3.825,
+    4.25,
+    1.4875
+   ],
+   "centre_studs": [
+    3.253,
+    6.4954,
+    2.864
+   ],
+   "size_studs": [
+    0.675,
+    1.914,
+    2.774
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Exhaust",
+   "group": "Underbody",
+   "material": "Gunmetal",
+   "triangles": 500,
+   "pivot_studs": [
+    1.7948,
+    1.7089,
+    2.3947
+   ],
+   "centre_studs": [
+    1.7948,
+    1.7089,
+    2.3947
+   ],
+   "size_studs": [
+    2.319,
+    0.713,
+    13.964
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "FogBezel_L",
+   "group": "Lights",
+   "material": "TrimBlack",
+   "triangles": 650,
+   "pivot_studs": [
+    -3.1545,
+    2.9073,
+    -9.6596
+   ],
+   "centre_studs": [
+    -3.1545,
+    2.9073,
+    -9.6596
+   ],
+   "size_studs": [
+    1.239,
+    1.69,
+    0.992
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "FogBezel_R",
+   "group": "Lights",
+   "material": "TrimBlack",
+   "triangles": 650,
+   "pivot_studs": [
+    3.1545,
+    2.9073,
+    -9.6596
+   ],
+   "centre_studs": [
+    3.1545,
+    2.9073,
+    -9.6596
+   ],
+   "size_studs": [
+    1.239,
+    1.69,
+    0.992
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "FogLamp_L",
+   "group": "Lights",
+   "material": "LensWhite",
+   "triangles": 260,
+   "pivot_studs": [
+    -3.1959,
+    2.7201,
+    -9.8262
+   ],
+   "centre_studs": [
+    -3.1959,
+    2.7201,
+    -9.8262
+   ],
+   "size_studs": [
+    0.34,
+    0.341,
+    0.085
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "FogLamp_R",
+   "group": "Lights",
+   "material": "LensWhite",
+   "triangles": 260,
+   "pivot_studs": [
+    3.1959,
+    2.7201,
+    -9.8262
+   ],
+   "centre_studs": [
+    3.1959,
+    2.7201,
+    -9.8262
+   ],
+   "size_studs": [
+    0.34,
+    0.341,
+    0.085
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "FuelDoor",
+   "group": "Body",
+   "material": "Paint",
+   "triangles": 150,
+   "pivot_studs": [
+    -3.8119,
+    4.675,
+    5.61
+   ],
+   "centre_studs": [
+    -3.8119,
+    4.675,
+    5.61
+   ],
+   "size_studs": [
+    0.081,
+    0.531,
+    0.659
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "GearShifter",
+   "group": "Interior",
+   "material": "TrimBlack",
+   "triangles": 320,
+   "pivot_studs": [
+    0.0003,
+    3.5402,
+    -1.1377
+   ],
+   "centre_studs": [
+    0.0003,
+    3.5402,
+    -1.1377
+   ],
+   "size_studs": [
+    0.444,
+    1.233,
+    0.464
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Glass_Rear",
+   "group": "Glass",
+   "material": "Glass",
+   "triangles": 368,
+   "pivot_studs": [
+    0.0,
+    6.528,
+    4.3727
+   ],
+   "centre_studs": [
+    0.0,
+    6.528,
+    4.3727
+   ],
+   "size_studs": [
+    4.888,
+    1.505,
+    0.218
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Glass_Windshield",
+   "group": "Glass",
+   "material": "Glass",
+   "triangles": 572,
+   "pivot_studs": [
+    0.0,
+    6.3154,
+    -1.7883
+   ],
+   "centre_studs": [
+    0.0,
+    6.3154,
+    -1.7883
+   ],
+   "size_studs": [
+    6.698,
+    2.122,
+    3.349
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Glovebox",
+   "group": "Interior",
+   "material": "Dash",
+   "triangles": 218,
+   "pivot_studs": [
+    1.7424,
+    3.9525,
+    -2.1914
+   ],
+   "centre_studs": [
+    1.7424,
+    3.9525,
+    -2.1914
+   ],
+   "size_studs": [
+    1.768,
+    0.578,
+    0.45
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Grille",
+   "group": "Body",
+   "material": "TrimDark",
+   "triangles": 3000,
+   "pivot_studs": [
+    0.0,
+    3.7474,
+    -10.0572
+   ],
+   "centre_studs": [
+    0.0,
+    3.7474,
+    -10.0572
+   ],
+   "size_studs": [
+    4.029,
+    1.715,
+    0.429
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Handbrake",
+   "group": "Interior",
+   "material": "TrimBlack",
+   "triangles": 260,
+   "pivot_studs": [
+    0.0004,
+    3.2964,
+    0.0862
+   ],
+   "centre_studs": [
+    0.0004,
+    3.2964,
+    0.0862
+   ],
+   "size_studs": [
+    0.182,
+    0.47,
+    0.912
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_DRL_L",
+   "group": "Lights",
+   "material": "LightDRL",
+   "triangles": 300,
+   "pivot_studs": [
+    -2.9676,
+    4.1408,
+    -9.612
+   ],
+   "centre_studs": [
+    -2.9676,
+    4.1408,
+    -9.612
+   ],
+   "size_studs": [
+    1.57,
+    0.301,
+    0.881
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_DRL_R",
+   "group": "Lights",
+   "material": "LightDRL",
+   "triangles": 300,
+   "pivot_studs": [
+    2.9676,
+    4.1408,
+    -9.612
+   ],
+   "centre_studs": [
+    2.9676,
+    4.1408,
+    -9.612
+   ],
+   "size_studs": [
+    1.57,
+    0.301,
+    0.881
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_Housing_L",
+   "group": "Lights",
+   "material": "Gunmetal",
+   "triangles": 600,
+   "pivot_studs": [
+    -2.9576,
+    4.2701,
+    -9.3613
+   ],
+   "centre_studs": [
+    -2.9576,
+    4.2701,
+    -9.3613
+   ],
+   "size_studs": [
+    1.84,
+    0.661,
+    1.226
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_Housing_R",
+   "group": "Lights",
+   "material": "Gunmetal",
+   "triangles": 600,
+   "pivot_studs": [
+    2.9576,
+    4.2701,
+    -9.3613
+   ],
+   "centre_studs": [
+    2.9576,
+    4.2701,
+    -9.3613
+   ],
+   "size_studs": [
+    1.84,
+    0.661,
+    1.226
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_Indicator_L",
+   "group": "Lights",
+   "material": "LensAmber",
+   "triangles": 200,
+   "pivot_studs": [
+    -3.7065,
+    4.3778,
+    -9.1715
+   ],
+   "centre_studs": [
+    -3.7065,
+    4.3778,
+    -9.1715
+   ],
+   "size_studs": [
+    0.316,
+    0.419,
+    0.485
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_Indicator_R",
+   "group": "Lights",
+   "material": "LensAmber",
+   "triangles": 200,
+   "pivot_studs": [
+    3.7065,
+    4.3778,
+    -9.1715
+   ],
+   "centre_studs": [
+    3.7065,
+    4.3778,
+    -9.1715
+   ],
+   "size_studs": [
+    0.316,
+    0.419,
+    0.485
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_Lens_L",
+   "group": "Lights",
+   "material": "LensClear",
+   "triangles": 700,
+   "pivot_studs": [
+    -2.9419,
+    4.2708,
+    -9.5308
+   ],
+   "centre_studs": [
+    -2.9419,
+    4.2708,
+    -9.5308
+   ],
+   "size_studs": [
+    1.799,
+    0.654,
+    1.212
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_Lens_R",
+   "group": "Lights",
+   "material": "LensClear",
+   "triangles": 700,
+   "pivot_studs": [
+    2.9419,
+    4.2708,
+    -9.5308
+   ],
+   "centre_studs": [
+    2.9419,
+    4.2708,
+    -9.5308
+   ],
+   "size_studs": [
+    1.799,
+    0.654,
+    1.212
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_Reflector_L",
+   "group": "Lights",
+   "material": "Chrome",
+   "triangles": 600,
+   "pivot_studs": [
+    -2.8501,
+    4.3333,
+    -9.6105
+   ],
+   "centre_studs": [
+    -2.8501,
+    4.3333,
+    -9.6105
+   ],
+   "size_studs": [
+    1.433,
+    0.434,
+    0.688
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Headlight_Reflector_R",
+   "group": "Lights",
+   "material": "Chrome",
+   "triangles": 600,
+   "pivot_studs": [
+    2.8501,
+    4.3333,
+    -9.6105
+   ],
+   "centre_studs": [
+    2.8501,
+    4.3333,
+    -9.6105
+   ],
+   "size_studs": [
+    1.433,
+    0.434,
+    0.688
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Hood",
+   "group": "Body",
+   "material": "Paint",
+   "triangles": 1500,
+   "pivot_studs": [
+    0.0,
+    5.253,
+    -3.6975
+   ],
+   "centre_studs": [
+    0.0,
+    4.9984,
+    -6.9457
+   ],
+   "size_studs": [
+    6.902,
+    0.745,
+    6.441
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Mirror_Glass_L",
+   "group": "Body",
+   "material": "MirrorGlass",
+   "triangles": 80,
+   "pivot_studs": [
+    -4.25,
+    5.831,
+    -2.5458
+   ],
+   "centre_studs": [
+    -4.25,
+    5.831,
+    -2.5458
+   ],
+   "size_studs": [
+    0.684,
+    0.446,
+    0.025
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Mirror_Glass_R",
+   "group": "Body",
+   "material": "MirrorGlass",
+   "triangles": 80,
+   "pivot_studs": [
+    4.25,
+    5.831,
+    -2.5458
+   ],
+   "centre_studs": [
+    4.25,
+    5.831,
+    -2.5458
+   ],
+   "size_studs": [
+    0.684,
+    0.446,
+    0.025
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Mirror_L",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 800,
+   "pivot_studs": [
+    -4.1439,
+    5.8204,
+    -2.805
+   ],
+   "centre_studs": [
+    -4.1439,
+    5.8204,
+    -2.805
+   ],
+   "size_studs": [
+    1.13,
+    0.693,
+    0.637
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Mirror_R",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 800,
+   "pivot_studs": [
+    4.1439,
+    5.8204,
+    -2.805
+   ],
+   "centre_studs": [
+    4.1439,
+    5.8204,
+    -2.805
+   ],
+   "size_studs": [
+    1.13,
+    0.693,
+    0.637
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "MudFlap_FL",
+   "group": "Body",
+   "material": "Rubber",
+   "triangles": 120,
+   "pivot_studs": [
+    -3.3784,
+    1.6999,
+    -4.1886
+   ],
+   "centre_studs": [
+    -3.3784,
+    1.6999,
+    -4.1886
+   ],
+   "size_studs": [
+    0.81,
+    0.851,
+    0.136
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "MudFlap_FR",
+   "group": "Body",
+   "material": "Rubber",
+   "triangles": 120,
+   "pivot_studs": [
+    3.3784,
+    1.6999,
+    -4.1886
+   ],
+   "centre_studs": [
+    3.3784,
+    1.6999,
+    -4.1886
+   ],
+   "size_studs": [
+    0.81,
+    0.851,
+    0.136
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "MudFlap_RL",
+   "group": "Body",
+   "material": "Rubber",
+   "triangles": 120,
+   "pivot_studs": [
+    -3.3999,
+    1.9865,
+    8.9366
+   ],
+   "centre_studs": [
+    -3.3999,
+    1.9865,
+    8.9366
+   ],
+   "size_studs": [
+    0.809,
+    1.254,
+    0.138
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "MudFlap_RR",
+   "group": "Body",
+   "material": "Rubber",
+   "triangles": 120,
+   "pivot_studs": [
+    3.3999,
+    1.9865,
+    8.9366
+   ],
+   "centre_studs": [
+    3.3999,
+    1.9865,
+    8.9366
+   ],
+   "size_studs": [
+    0.809,
+    1.254,
+    0.138
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "MuleRoot",
+   "group": "Mule",
+   "material": "Anchor",
+   "triangles": 12,
+   "pivot_studs": [
+    0.0,
+    1.615,
+    -0.0
+   ],
+   "centre_studs": [
+    0.0,
+    1.615,
+    -0.0
+   ],
+   "size_studs": [
+    1.062,
+    1.062,
+    1.062
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Pedals",
+   "group": "Interior",
+   "material": "TrimBlack",
+   "triangles": 360,
+   "pivot_studs": [
+    -1.5724,
+    3.2278,
+    -2.7508
+   ],
+   "centre_studs": [
+    -1.5724,
+    3.2278,
+    -2.7508
+   ],
+   "size_studs": [
+    1.325,
+    1.29,
+    0.546
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "PlateBracket_Front",
+   "group": "Plates",
+   "material": "TrimBlack",
+   "triangles": 12,
+   "pivot_studs": [
+    0.0,
+    2.635,
+    -10.4295
+   ],
+   "centre_studs": [
+    0.0,
+    2.635,
+    -10.4295
+   ],
+   "size_studs": [
+    1.632,
+    0.85,
+    0.051
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "PlateLamp",
+   "group": "Lights",
+   "material": "LensWhite",
+   "triangles": 356,
+   "pivot_studs": [
+    0.0083,
+    2.7965,
+    11.9451
+   ],
+   "centre_studs": [
+    0.0083,
+    2.7965,
+    11.9451
+   ],
+   "size_studs": [
+    0.401,
+    0.085,
+    0.118
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Plate_Front",
+   "group": "Plates",
+   "material": "Plate",
+   "triangles": 12,
+   "pivot_studs": [
+    0.0,
+    2.635,
+    -10.4635
+   ],
+   "centre_studs": [
+    0.0,
+    2.635,
+    -10.4635
+   ],
+   "size_studs": [
+    1.53,
+    0.765,
+    0.017
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Plate_Rear",
+   "group": "Plates",
+   "material": "Plate",
+   "triangles": 12,
+   "pivot_studs": [
+    0.0,
+    2.4395,
+    12.0126
+   ],
+   "centre_studs": [
+    0.0,
+    2.4395,
+    12.0126
+   ],
+   "size_studs": [
+    1.53,
+    0.765,
+    0.017
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "RearViewMirror",
+   "group": "Interior",
+   "material": "TrimBlack",
+   "triangles": 220,
+   "pivot_studs": [
+    -0.0005,
+    7.1173,
+    -0.3715
+   ],
+   "centre_studs": [
+    -0.0005,
+    7.1173,
+    -0.3715
+   ],
+   "size_studs": [
+    0.935,
+    0.388,
+    0.26
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "RearViewMirror_Glass",
+   "group": "Interior",
+   "material": "MirrorGlass",
+   "triangles": 60,
+   "pivot_studs": [
+    -0.0003,
+    7.055,
+    -0.2507
+   ],
+   "centre_studs": [
+    -0.0003,
+    7.055,
+    -0.2507
+   ],
+   "size_studs": [
+    0.798,
+    0.144,
+    0.021
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SeatAnchor_Driver",
+   "group": "Seats",
+   "material": "Anchor",
+   "triangles": 12,
+   "pivot_studs": [
+    -1.53,
+    3.1875,
+    0.6475
+   ],
+   "centre_studs": [
+    -1.53,
+    3.1875,
+    0.6475
+   ],
+   "size_studs": [
+    1.7,
+    0.212,
+    1.7
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SeatAnchor_Passenger",
+   "group": "Seats",
+   "material": "Anchor",
+   "triangles": 12,
+   "pivot_studs": [
+    1.53,
+    3.1875,
+    0.6475
+   ],
+   "centre_studs": [
+    1.53,
+    3.1875,
+    0.6475
+   ],
+   "size_studs": [
+    1.7,
+    0.212,
+    1.7
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SeatAnchor_RearLeft",
+   "group": "Seats",
+   "material": "Anchor",
+   "triangles": 12,
+   "pivot_studs": [
+    -1.53,
+    3.145,
+    3.5375
+   ],
+   "centre_studs": [
+    -1.53,
+    3.145,
+    3.5375
+   ],
+   "size_studs": [
+    1.7,
+    0.212,
+    1.7
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SeatAnchor_RearRight",
+   "group": "Seats",
+   "material": "Anchor",
+   "triangles": 12,
+   "pivot_studs": [
+    1.53,
+    3.145,
+    3.5375
+   ],
+   "centre_studs": [
+    1.53,
+    3.145,
+    3.5375
+   ],
+   "size_studs": [
+    1.7,
+    0.212,
+    1.7
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Seat_Front_L",
+   "group": "Interior",
+   "material": "SeatFabric",
+   "triangles": 1600,
+   "pivot_studs": [
+    -1.5302,
+    4.948,
+    0.3254
+   ],
+   "centre_studs": [
+    -1.5302,
+    4.948,
+    0.3254
+   ],
+   "size_studs": [
+    2.194,
+    4.348,
+    2.453
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Seat_Front_L_Base",
+   "group": "Interior",
+   "material": "InteriorTrim",
+   "triangles": 260,
+   "pivot_studs": [
+    -1.7126,
+    2.7376,
+    0.3727
+   ],
+   "centre_studs": [
+    -1.7126,
+    2.7376,
+    0.3727
+   ],
+   "size_studs": [
+    1.98,
+    1.013,
+    2.233
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Seat_Front_R",
+   "group": "Interior",
+   "material": "SeatFabric",
+   "triangles": 1600,
+   "pivot_studs": [
+    1.5302,
+    4.948,
+    0.3254
+   ],
+   "centre_studs": [
+    1.5302,
+    4.948,
+    0.3254
+   ],
+   "size_studs": [
+    2.194,
+    4.348,
+    2.453
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Seat_Front_R_Base",
+   "group": "Interior",
+   "material": "InteriorTrim",
+   "triangles": 260,
+   "pivot_studs": [
+    1.7126,
+    2.7376,
+    0.3727
+   ],
+   "centre_studs": [
+    1.7126,
+    2.7376,
+    0.3727
+   ],
+   "size_studs": [
+    1.98,
+    1.013,
+    2.233
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Seat_Rear",
+   "group": "Interior",
+   "material": "SeatFabric",
+   "triangles": 2300,
+   "pivot_studs": [
+    -0.0,
+    4.3821,
+    3.2623
+   ],
+   "centre_studs": [
+    -0.0,
+    4.3821,
+    3.2623
+   ],
+   "size_studs": [
+    6.587,
+    4.344,
+    2.292
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SkidPlate",
+   "group": "Body",
+   "material": "Gunmetal",
+   "triangles": 500,
+   "pivot_studs": [
+    0.0,
+    1.7765,
+    -9.469
+   ],
+   "centre_studs": [
+    0.0,
+    1.7765,
+    -9.469
+   ],
+   "size_studs": [
+    3.4,
+    0.102,
+    1.513
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SpareWheel_Tire",
+   "group": "Underbody",
+   "material": "Rubber",
+   "triangles": 1088,
+   "pivot_studs": [
+    0.0,
+    1.9758,
+    9.6475
+   ],
+   "centre_studs": [
+    0.0,
+    1.9758,
+    9.6475
+   ],
+   "size_studs": [
+    3.188,
+    1.072,
+    3.188
+   ],
+   "texture_color": "mule_tire_color.png",
+   "texture_roughness": "mule_tire_roughness.png"
+  },
+  {
+   "name": "SteeringColumn",
+   "group": "Interior",
+   "material": "TrimBlack",
+   "triangles": 420,
+   "pivot_studs": [
+    -1.5312,
+    4.2562,
+    -1.6082
+   ],
+   "centre_studs": [
+    -1.5312,
+    4.2562,
+    -1.6082
+   ],
+   "size_studs": [
+    1.43,
+    0.772,
+    1.381
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SteeringWheel",
+   "group": "Interior",
+   "material": "TrimBlack",
+   "triangles": 1400,
+   "pivot_studs": [
+    -1.53,
+    4.5475,
+    -0.9138
+   ],
+   "centre_studs": [
+    -1.53,
+    4.5489,
+    -0.9128
+   ],
+   "size_studs": [
+    1.71,
+    1.575,
+    0.765
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SunVisor_L",
+   "group": "Interior",
+   "material": "DoorTrim",
+   "triangles": 140,
+   "pivot_studs": [
+    -1.7001,
+    7.3865,
+    0.1698
+   ],
+   "centre_studs": [
+    -1.7001,
+    7.3865,
+    0.1698
+   ],
+   "size_studs": [
+    1.446,
+    0.132,
+    0.663
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "SunVisor_R",
+   "group": "Interior",
+   "material": "DoorTrim",
+   "triangles": 140,
+   "pivot_studs": [
+    1.7001,
+    7.3865,
+    0.1698
+   ],
+   "centre_studs": [
+    1.7001,
+    7.3865,
+    0.1698
+   ],
+   "size_studs": [
+    1.446,
+    0.132,
+    0.663
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "TailLight_Brake_L",
+   "group": "Lights",
+   "material": "LensRed",
+   "triangles": 420,
+   "pivot_studs": [
+    -3.5848,
+    4.8036,
+    11.6832
+   ],
+   "centre_studs": [
+    -3.5848,
+    4.8036,
+    11.6832
+   ],
+   "size_studs": [
+    0.552,
+    1.005,
+    0.272
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "TailLight_Brake_R",
+   "group": "Lights",
+   "material": "LensRed",
+   "triangles": 420,
+   "pivot_studs": [
+    3.5848,
+    4.8036,
+    11.6832
+   ],
+   "centre_studs": [
+    3.5848,
+    4.8036,
+    11.6832
+   ],
+   "size_studs": [
+    0.552,
+    1.005,
+    0.272
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "TailLight_Reverse_L",
+   "group": "Lights",
+   "material": "LensWhite",
+   "triangles": 160,
+   "pivot_studs": [
+    -3.5829,
+    4.1268,
+    11.6748
+   ],
+   "centre_studs": [
+    -3.5829,
+    4.1268,
+    11.6748
+   ],
+   "size_studs": [
+    0.549,
+    0.315,
+    0.255
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "TailLight_Reverse_R",
+   "group": "Lights",
+   "material": "LensWhite",
+   "triangles": 160,
+   "pivot_studs": [
+    3.5829,
+    4.1268,
+    11.6748
+   ],
+   "centre_studs": [
+    3.5829,
+    4.1268,
+    11.6748
+   ],
+   "size_studs": [
+    0.549,
+    0.315,
+    0.255
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "TailLight_Turn_L",
+   "group": "Lights",
+   "material": "LensAmber",
+   "triangles": 260,
+   "pivot_studs": [
+    -3.5806,
+    3.7645,
+    11.6748
+   ],
+   "centre_studs": [
+    -3.5806,
+    3.7645,
+    11.6748
+   ],
+   "size_studs": [
+    0.544,
+    0.376,
+    0.255
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "TailLight_Turn_R",
+   "group": "Lights",
+   "material": "LensAmber",
+   "triangles": 260,
+   "pivot_studs": [
+    3.5806,
+    3.7645,
+    11.6748
+   ],
+   "centre_studs": [
+    3.5806,
+    3.7645,
+    11.6748
+   ],
+   "size_studs": [
+    0.544,
+    0.376,
+    0.255
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Tailgate",
+   "group": "Body",
+   "material": "Paint",
+   "triangles": 933,
+   "pivot_studs": [
+    0.0,
+    2.975,
+    11.6662
+   ],
+   "centre_studs": [
+    0.0,
+    4.2139,
+    11.6864
+   ],
+   "size_studs": [
+    6.49,
+    2.457,
+    0.249
+   ],
+   "texture_color": "mule_paint_color.png",
+   "texture_roughness": "mule_paint_roughness.png"
+  },
+  {
+   "name": "Tailgate_Bedliner",
+   "group": "Body",
+   "material": "Bedliner",
+   "triangles": 49,
+   "pivot_studs": [
+    0.0,
+    2.975,
+    11.6662
+   ],
+   "centre_studs": [
+    0.0,
+    4.2213,
+    11.5696
+   ],
+   "size_studs": [
+    6.49,
+    2.442,
+    0.015
+   ],
+   "texture_color": "mule_bedliner_color.png",
+   "texture_roughness": "mule_bedliner_roughness.png"
+  },
+  {
+   "name": "Tailgate_Handle",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 150,
+   "pivot_studs": [
+    0.0001,
+    5.1638,
+    11.7768
+   ],
+   "centre_studs": [
+    0.0001,
+    5.1638,
+    11.7768
+   ],
+   "size_studs": [
+    0.807,
+    0.17,
+    0.102
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Tailgate_TrimBlack",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 518,
+   "pivot_studs": [
+    0.0,
+    2.975,
+    11.6662
+   ],
+   "centre_studs": [
+    -0.0,
+    5.168,
+    11.7555
+   ],
+   "size_studs": [
+    0.986,
+    0.323,
+    0.111
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Underbody_Chassis",
+   "group": "Underbody",
+   "material": "Underbody",
+   "triangles": 1800,
+   "pivot_studs": [
+    -0.1391,
+    2.3526,
+    0.8624
+   ],
+   "centre_studs": [
+    -0.1391,
+    2.3526,
+    0.8624
+   ],
+   "size_studs": [
+    6.435,
+    2.743,
+    20.843
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_FL_Caliper",
+   "group": "Wheel_FL",
+   "material": "Gunmetal",
+   "triangles": 260,
+   "pivot_studs": [
+    -3.2937,
+    1.615,
+    -6.5556
+   ],
+   "centre_studs": [
+    -3.2683,
+    1.8946,
+    -6.0457
+   ],
+   "size_studs": [
+    0.289,
+    0.56,
+    0.511
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_FL_Disc",
+   "group": "Wheel_FL",
+   "material": "BrakeDisc",
+   "triangles": 384,
+   "pivot_studs": [
+    -3.2937,
+    1.615,
+    -6.5556
+   ],
+   "centre_studs": [
+    -3.3596,
+    1.615,
+    -6.5556
+   ],
+   "size_studs": [
+    0.251,
+    1.36,
+    1.36
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_FL_Rim",
+   "group": "Wheel_FL",
+   "material": "RimPaint",
+   "triangles": 1600,
+   "pivot_studs": [
+    -3.2937,
+    1.615,
+    -6.5556
+   ],
+   "centre_studs": [
+    -3.2939,
+    1.6156,
+    -6.5555
+   ],
+   "size_studs": [
+    0.932,
+    1.957,
+    1.957
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_FL_Tire",
+   "group": "Wheel_FL",
+   "material": "Rubber",
+   "triangles": 3104,
+   "pivot_studs": [
+    -3.2937,
+    1.615,
+    -6.5556
+   ],
+   "centre_studs": [
+    -3.2942,
+    1.615,
+    -6.5556
+   ],
+   "size_studs": [
+    1.072,
+    3.285,
+    3.285
+   ],
+   "texture_color": "mule_tire_color.png",
+   "texture_roughness": "mule_tire_roughness.png"
+  },
+  {
+   "name": "Wheel_FR_Caliper",
+   "group": "Wheel_FR",
+   "material": "Gunmetal",
+   "triangles": 260,
+   "pivot_studs": [
+    3.2937,
+    1.615,
+    -6.5556
+   ],
+   "centre_studs": [
+    3.2683,
+    1.8946,
+    -6.0457
+   ],
+   "size_studs": [
+    0.289,
+    0.56,
+    0.511
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_FR_Disc",
+   "group": "Wheel_FR",
+   "material": "BrakeDisc",
+   "triangles": 384,
+   "pivot_studs": [
+    3.2937,
+    1.615,
+    -6.5556
+   ],
+   "centre_studs": [
+    3.3596,
+    1.615,
+    -6.5556
+   ],
+   "size_studs": [
+    0.251,
+    1.36,
+    1.36
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_FR_Rim",
+   "group": "Wheel_FR",
+   "material": "RimPaint",
+   "triangles": 1600,
+   "pivot_studs": [
+    3.2937,
+    1.615,
+    -6.5556
+   ],
+   "centre_studs": [
+    3.2939,
+    1.6156,
+    -6.5555
+   ],
+   "size_studs": [
+    0.932,
+    1.957,
+    1.957
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_FR_Tire",
+   "group": "Wheel_FR",
+   "material": "Rubber",
+   "triangles": 3104,
+   "pivot_studs": [
+    3.2937,
+    1.615,
+    -6.5556
+   ],
+   "centre_studs": [
+    3.2942,
+    1.615,
+    -6.5556
+   ],
+   "size_studs": [
+    1.072,
+    3.285,
+    3.285
+   ],
+   "texture_color": "mule_tire_color.png",
+   "texture_roughness": "mule_tire_roughness.png"
+  },
+  {
+   "name": "Wheel_RL_Drum",
+   "group": "Wheel_RL",
+   "material": "Gunmetal",
+   "triangles": 240,
+   "pivot_studs": [
+    -3.315,
+    1.615,
+    6.5556
+   ],
+   "centre_studs": [
+    -3.2831,
+    1.615,
+    6.5556
+   ],
+   "size_studs": [
+    0.446,
+    1.317,
+    1.317
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_RL_Rim",
+   "group": "Wheel_RL",
+   "material": "RimPaint",
+   "triangles": 1600,
+   "pivot_studs": [
+    -3.315,
+    1.615,
+    6.5556
+   ],
+   "centre_studs": [
+    -3.3152,
+    1.6156,
+    6.5557
+   ],
+   "size_studs": [
+    0.932,
+    1.957,
+    1.957
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_RL_Tire",
+   "group": "Wheel_RL",
+   "material": "Rubber",
+   "triangles": 3104,
+   "pivot_studs": [
+    -3.315,
+    1.615,
+    6.5556
+   ],
+   "centre_studs": [
+    -3.3154,
+    1.615,
+    6.5556
+   ],
+   "size_studs": [
+    1.072,
+    3.285,
+    3.285
+   ],
+   "texture_color": "mule_tire_color.png",
+   "texture_roughness": "mule_tire_roughness.png"
+  },
+  {
+   "name": "Wheel_RR_Drum",
+   "group": "Wheel_RR",
+   "material": "Gunmetal",
+   "triangles": 240,
+   "pivot_studs": [
+    3.315,
+    1.615,
+    6.5556
+   ],
+   "centre_studs": [
+    3.2831,
+    1.615,
+    6.5556
+   ],
+   "size_studs": [
+    0.446,
+    1.317,
+    1.317
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_RR_Rim",
+   "group": "Wheel_RR",
+   "material": "RimPaint",
+   "triangles": 1600,
+   "pivot_studs": [
+    3.315,
+    1.615,
+    6.5556
+   ],
+   "centre_studs": [
+    3.3152,
+    1.6156,
+    6.5557
+   ],
+   "size_studs": [
+    0.932,
+    1.957,
+    1.957
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  },
+  {
+   "name": "Wheel_RR_Tire",
+   "group": "Wheel_RR",
+   "material": "Rubber",
+   "triangles": 3104,
+   "pivot_studs": [
+    3.315,
+    1.615,
+    6.5556
+   ],
+   "centre_studs": [
+    3.3154,
+    1.615,
+    6.5556
+   ],
+   "size_studs": [
+    1.072,
+    3.285,
+    3.285
+   ],
+   "texture_color": "mule_tire_color.png",
+   "texture_roughness": "mule_tire_roughness.png"
+  },
+  {
+   "name": "Wipers",
+   "group": "Body",
+   "material": "TrimBlack",
+   "triangles": 420,
+   "pivot_studs": [
+    0.1264,
+    5.3403,
+    -3.4532
+   ],
+   "centre_studs": [
+    0.1264,
+    5.3403,
+    -3.4532
+   ],
+   "size_studs": [
+    5.061,
+    0.304,
+    0.678
+   ],
+   "texture_color": null,
+   "texture_roughness": null
+  }
+ ]
+}
